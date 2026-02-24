@@ -3,20 +3,18 @@ import os
 import json
 import csv
 import numpy as np
-import pickle
-from tqdm import tqdm
 from pathlib import Path
+from tqdm.auto import tqdm  # ← notebook friendly
 
 
 # ============================================================
-# ROI LOADER (unchanged logic, cleaned)
+# ROI LOADER
 # ============================================================
 
 def load_roi_with_fallback(local_roi_path, video_path):
     """
     Load ROI JSON.
-    If missing locally, fall back to reference animal:
-    NML_GC_01 / 2025_12_16
+    If missing locally, fall back to reference animal.
     """
 
     # ---------- CASE 1: local exists ----------
@@ -44,8 +42,7 @@ def load_roi_with_fallback(local_roi_path, video_path):
 
     # ---------- Build reference path ----------
     ref_base = Path(video_path).parents[3]
-
-    ref_dir = ref_base / "PData" / "NML_GC_01" / "2025_12_16"
+    ref_dir = ref_base / "Air_Wheel_Methods" / "NML_GC_01" / "2025_12_16"
 
     if cam == "face":
         ref_name = (
@@ -78,20 +75,39 @@ def load_roi_with_fallback(local_roi_path, video_path):
 # MAIN ANALYSIS
 # ============================================================
 
-def run_comprehensive_motion_analysis(data_list, roi_exist=True):
+def run_comprehensive_motion_analysis(
+    data_list,
+    roi_exist=True,
+    force_cpu=False,
+    verbose=True,
+):
+    """
+    Main AIR Wheel optical flow pipeline.
+
+    Parameters
+    ----------
+    data_list : list
+    roi_exist : bool
+    force_cpu : bool
+        If True, disables GPU even if available
+    verbose : bool
+    """
 
     # --------------------------------------------------------
     # GPU CHECK
     # --------------------------------------------------------
-    use_gpu = cv2.cuda.getCudaEnabledDeviceCount() > 0
-    print(f"\n[INFO] GPU available: {use_gpu}")
+    gpu_available = cv2.cuda.getCudaEnabledDeviceCount() > 0
+    use_gpu = gpu_available and not force_cpu
+
+    if verbose:
+        print(f"[INFO] GPU available: {gpu_available}")
+        print(f"[INFO] Using GPU: {use_gpu}")
 
     if use_gpu:
         tvl1_gpu = cv2.cuda_OpticalFlowDual_TVL1.create()
         gpu_prev = cv2.cuda_GpuMat()
         gpu_curr = cv2.cuda_GpuMat()
     else:
-        print("[WARNING] Falling back to CPU optical flow")
         tvl1_cpu = cv2.optflow.DualTVL1OpticalFlow_create()
 
     targets = ['face', 'paws', 'pupil']
@@ -100,7 +116,8 @@ def run_comprehensive_motion_analysis(data_list, roi_exist=True):
     # ========================================================
     # PHASE 1: BUILD QUEUE
     # ========================================================
-    print("\n--- PHASE 1: SELECT ROIs FOR ALL VIDEOS ---")
+    if verbose:
+        print("\n--- PHASE 1: SELECT ROIs FOR ALL VIDEOS ---")
 
     for entry in data_list:
         mp4_files = entry['video']['mp4']
@@ -122,7 +139,7 @@ def run_comprehensive_motion_analysis(data_list, roi_exist=True):
             if not os.path.exists(video_path):
                 continue
 
-            # ---------- load frame ----------
+            # ---------- load first frame ----------
             cap = cv2.VideoCapture(video_path)
             ret, first_frame = cap.read()
             cap.release()
@@ -160,19 +177,47 @@ def run_comprehensive_motion_analysis(data_list, roi_exist=True):
                 'roi': (x, y, w, h),
                 'output': f"{root}_OF.csv"
             })
-
+    
     # ========================================================
     # PHASE 2: PROCESS
     # ========================================================
-    print(f"\n--- PHASE 2: PROCESSING {len(analysis_queue)} ANALYSES ---")
+    if verbose:
+        print(f"\n--- PHASE 2: PROCESSING {len(analysis_queue)} ANALYSES ---")
 
     for task in analysis_queue:
-
+        # print(task["output"])
+        # continue
         video_path = task['path']
         x, y, w, h = task['roi']
 
         cap = cv2.VideoCapture(video_path)
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+        # import matplotlib.pyplot as plt
+
+        # # --- QC: show first frame with ROI ---
+        # ret_qc, frame_qc = cap.read()
+        # if not ret_qc:
+        #     print(f"[WARNING] Could not read first frame: {video_path}")
+        #     cap.release()
+        #     continue
+
+        # qc_frame = frame_qc.copy()
+        # cv2.rectangle(qc_frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+
+        # # convert BGR → RGB for matplotlib
+        # qc_rgb = cv2.cvtColor(qc_frame, cv2.COLOR_BGR2RGB)
+
+        # plt.figure(figsize=(5,4))
+        # plt.imshow(qc_rgb)
+        # plt.title(f"QC ROI — {task['key']}")
+        # plt.axis("off")
+        # plt.show()
+
+        # # reset video to frame 0
+        # cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+
+        # continue
 
         ret, prev_frame = cap.read()
         if not ret:
@@ -189,8 +234,8 @@ def run_comprehensive_motion_analysis(data_list, roi_exist=True):
                         desc=f"Analyzing {task['key']}",
                         unit="fr",
                         leave=True)
-            pbar.update(1)
 
+            pbar.update(1)
             frame_count = 1
 
             while True:
@@ -201,23 +246,15 @@ def run_comprehensive_motion_analysis(data_list, roi_exist=True):
                 timestamp = cap.get(cv2.CAP_PROP_POS_MSEC)
                 curr_gray = cv2.cvtColor(frame[y:y+h, x:x+w], cv2.COLOR_BGR2GRAY)
 
-                # ====================================================
-                # 🔥 GPU PATH
-                # ====================================================
+                # ---------- GPU ----------
                 if use_gpu:
                     gpu_prev.upload(prev_gray)
                     gpu_curr.upload(curr_gray)
-
                     flow_gpu = tvl1_gpu.calc(gpu_prev, gpu_curr, None)
                     flow = flow_gpu.download()
-
-                # ====================================================
-                # 🐢 CPU FALLBACK
-                # ====================================================
                 else:
                     flow = tvl1_cpu.calc(prev_gray, curr_gray, None)
 
-                # ---------- metrics ----------
                 avg_u = np.mean(flow[..., 0])
                 avg_v = np.mean(flow[..., 1])
                 motion_energy = np.mean(cv2.absdiff(curr_gray, prev_gray))
@@ -237,13 +274,3 @@ def run_comprehensive_motion_analysis(data_list, roi_exist=True):
             pbar.close()
 
         cap.release()
-
-
-# ============================================================
-# RUN
-# ============================================================
-
-with open("session_data.pkl", "rb") as f:
-    loaded_data = pickle.load(f)
-
-run_comprehensive_motion_analysis(loaded_data["animal"])
