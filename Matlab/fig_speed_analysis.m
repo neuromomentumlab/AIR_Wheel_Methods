@@ -692,14 +692,14 @@ adjust_axes(ff,[mY MY],stp,widths,gap,{''});
 
 hold on
 
-% % ✅ shaded SEM band (better than dashed)
+% % shaded SEM band (better than dashed)
 % fill([t_evt fliplr(t_evt)], ...
 %      [grand_mean'+grand_sem' fliplr(grand_mean'-grand_sem')], ...
 %      [0.7 0.7 0.7], ...
 %      'EdgeColor','none', ...
 %      'FaceAlpha',0.4);
 % 
-% % ✅ mean line
+% % mean line
 shadedErrorBar(t_evt,grand_mean,grand_sem);
 plot(t_evt, grand_mean, 'k', 'LineWidth', 2);
 

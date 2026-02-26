@@ -59,6 +59,7 @@ if 1
 %     make_db(T_C);
     owr = 0;
     animal = process_h264(animal,owr);
+    oanimal = process_h264(oanimal,owr);
     animal = process_behavior_signals(animal);
     oanimal = process_behavior_signals(oanimal);
 end

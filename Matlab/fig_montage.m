@@ -1,11 +1,11 @@
 function fig_montage
 
-vp = evalin('base','vp');
-vf = evalin('base','vf');
-v = evalin('base','v');
+% vp = evalin('base','vp');
+% vf = evalin('base','vf');
+% v = evalin('base','v');
 mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_font_size = mD.axes_font_size;
 mData = mD;
-animal = evalin('base','animal');
+animal = evalin('base','oanimal');
 n = 0;
 %% montage of videos
 magfac = mD.magfac;
@@ -137,7 +137,7 @@ tcolors = mD.colors(1:3);
 for c = 1:numel(cams)
     cam = cams{c};
     % === 2) LED – paws camera (60 Hz) ===
-    T = animal(1).b.led_sig.(cam);
+    T = animal(3).b.led_sig.(cam);
     t_paws = T.time/60;
     air_paws = double(T.is_on);
     plot(t_paws, air_paws * voffset(c), 'color',tcolors{c}, 'LineWidth', 0.51);
@@ -239,8 +239,8 @@ for i = 1:numel(streams)
     s = streams(i);
     nexttile(i);
     plot(S.daq.on, S.(s).on, '.'); hold on;
-    xlim([min(S.daq.on) max(S.daq.on)]);
-    ylim([min(S.(s).on) max(S.(s).on)]);
+    % xlim([min(S.daq.on) max(S.daq.on)]);
+    % ylim([min(S.(s).on) max(S.(s).on)]);
     lo = min([xlim ylim]); hi = max([xlim ylim]);
     plot([lo hi],[lo hi],'k--'); % unity
     xlabel('DAQ ON duration (s)'); ylabel(sprintf('%s ON duration (s)', upper(s)));
@@ -249,8 +249,8 @@ for i = 1:numel(streams)
     
     format_axes(gca)
     axis equal
-    ylim([2.75 8.75])
-    xlim([2.75 8.75])
+    % ylim([2.75 8.75])
+    % xlim([2.75 8.75])
 end
 
 % --- OFF scatters ---
@@ -259,16 +259,16 @@ for i = 1:numel(streams)
     s = streams(i);
     nexttile(i+3);
     plot(S.daq.off, S.(s).off, '.'); hold on;
-    xlim([min(S.daq.off) max(S.daq.off)]);
-    ylim([min(S.(s).off) max(S.(s).off)]);
+    % xlim([min(S.daq.off) max(S.daq.off)]);
+    % ylim([min(S.(s).off) max(S.(s).off)]);
     lo = min([xlim ylim]); hi = max([xlim ylim]);
     plot([lo hi],[lo hi],'k-'); % unity
     xlabel('DAQ OFF duration (s)'); ylabel(sprintf('%s OFF duration (s)', upper(s)));
     % title(sprintf('%s vs DAQ (OFF)', upper(s)));
     box off;
     axis equal
-    ylim([14 16])
-    xlim([14 16])
+    % ylim([14 16])
+    % xlim([14 16])
     format_axes(gca)
 end
 
