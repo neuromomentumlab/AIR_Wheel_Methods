@@ -97,12 +97,11 @@ if 1
     owr = 0;
     animal = process_h264(animal,owr);
     oanimal = process_h264(oanimal,owr);
-    oanimalR = process_h264_1(oanimalR,owr);
+    oanimalR = process_h264(oanimalR,owr);
     manimal = process_h264_1(manimal,owr);
 
     animal = process_behavior_signals(animal);
     oanimal = process_behavior_signals(oanimal);
-    oanimalR = process_behavior_signals(oanimalR);
     manimal = process_behavior_signals(manimal);
 end
 disp('Done');

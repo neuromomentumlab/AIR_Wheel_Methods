@@ -41,7 +41,8 @@ for an = 1:numel(animal)
                 continue;
             end
             b.led.(cam) = readtable(thisfile);
-            if strcmp(animal(1).ID,'NML_M_05')
+            if strcmp(animal(1).ID,'NML_M_08') || strcmp(animal(1).ID,'NML_GC_01_R')
+                disp(sprintf('%s',cam))
                 b.led_sig.(cam) = extract_led_from_roi_M(b.led.(cam), 45);
             else
                 b.led_sig.(cam) = extract_led_from_roi(b.led.(cam), 60);
