@@ -15,6 +15,7 @@ for an = 1:numel(animal)
 
             % If we don't have this camera, skip
             if ~isfield(animal(an).video.h264, cam)
+                disp(sprintf('Skipping %s',cam));
                 continue;
             end
 
@@ -36,10 +37,15 @@ for an = 1:numel(animal)
             end
             thisfile = animal(an).video.led.(cam);
             if ~exist(thisfile,'file')
+                disp(sprintf('Skipping %s',cam));
                 continue;
             end
             b.led.(cam) = readtable(thisfile);
-            b.led_sig.(cam) = extract_led_from_roi(b.led.(cam), 60);
+            if strcmp(animal(1).ID,'NML_M_05')
+                b.led_sig.(cam) = extract_led_from_roi_M(b.led.(cam), 45);
+            else
+                b.led_sig.(cam) = extract_led_from_roi(b.led.(cam), 60);
+            end
 
     end
 

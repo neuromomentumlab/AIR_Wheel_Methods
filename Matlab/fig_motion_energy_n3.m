@@ -17,7 +17,7 @@ fs = 60;
 Npre  = round(win_pre  * fs);
 Npost = round(win_post * fs);
 
-targets = {'paws'};
+targets = {'pupil'};
 num_animals = length(animal);
 
 animal_means = [];   % will store per-animal averages
@@ -120,7 +120,7 @@ format_axes(gca)
 
 save_pdf(ff.hf,mD.pdf_folder,'OF_air_onset_grand_mean.pdf',600);
 
-%%
+%
 win_pre  = 2;   % seconds
 win_post = 6;   % seconds
 fs = 60;
@@ -128,7 +128,7 @@ fs = 60;
 Npre  = round(win_pre  * fs);
 Npost = round(win_post * fs);
 
-targets = {'paws'};
+% targets = {'paws'};
 num_animals = length(animal);
 
 animal_means = [];   % will store per-animal offset averages
@@ -240,7 +240,7 @@ air_on_all  = [];
 air_off_all = [];
 
 num_animals = length(animal);
-key = 'paws';
+key = 'pupil';
 
 for a = 1:num_animals
     
@@ -315,7 +315,7 @@ for a = 1:num_animals
     fprintf('Animal %d processed (%d trials)\n',a,nTrials);
 end
 
-data_C = [air_on_all air_off_all];
+data_C = [air_off_all air_on_all];
 
 [within,dvn,xlabels] = make_within_table({'St'},[2]);
 dataT = make_between_table({data_C},dvn);
@@ -326,16 +326,16 @@ print_for_manuscript(ra)
 
 magfac = mData.magfac;
 
-ff = makeFigureRowsCols(2020,[10 4 1.25 1.5],...
+ff = makeFigureRowsCols(2021,[1 4 1.25 1.5],...
     'RowsCols',[1 1],...
     'spaceRowsCols',[0.07 0],...
     'rightUpShifts',[0.25 0.2],...
     'widthHeightAdjustment',[-550 -280]);
 
-MY = 0.35; ysp = 0.0725; mY = 0;
-ystf = 0.07251; ysigf = 0.015;
+MY = 0.3; ysp = 0.05725; mY = 0;
+ystf = 0.057251; ysigf = 0.015;
 
-tcolors = {'b','c'};
+tcolors = {'c','b'};
 
 [hbs,xdata,mVar,semVar,combs,p,h] = ...
     view_results_rmanova(ff.h_axes(1,1),ra,...
@@ -346,14 +346,14 @@ format_axes(gca);
 
 set(gca,'xcolor','k','ycolor','k',...
     'XTick',xdata,...
-    'XTickLabel',{'Air-On','Air-Off'});
+    'XTickLabel',{'Air-Off','Air-On'});
 
 xtickangle(30);
 ylabel({'Avg. OF Speed (cm/s)'});
 
 
-x_on  = air_on_all(:);
-x_off = air_off_all(:);
+x_on  = air_off_all(:);
+x_off = air_on_all(:);
 
 hold on
 
@@ -388,12 +388,12 @@ save_pdf(ff.hf,mData.pdf_folder,'bar_graphs_animals.pdf',600);
 
 
 
-%%
+%
 energy_on_all  = [];
 energy_off_all = [];
 
 num_animals = length(animal);
-key = 'paws';
+% key = 'paws';
 
 for a = 1:num_animals
     
@@ -467,7 +467,7 @@ for a = 1:num_animals
     fprintf('Animal %d processed (%d trials)\n',a,nTrials);
 end
 
-data_C = [energy_on_all energy_off_all];
+data_C = [energy_off_all energy_on_all];
 
 [within,dvn,xlabels] = make_within_table({'St'},[2]);
 dataT = make_between_table({data_C},dvn);
@@ -479,7 +479,7 @@ print_for_manuscript(ra)
 magfac = mData.magfac;
 mData = evalin('base','mData');
 
-tcolors = {'r','m'};
+tcolors = {'m','r'};
 
 ff = makeFigureRowsCols(2020,[10 4 1.25 1.5],...
     'RowsCols',[1 1],...
@@ -487,7 +487,7 @@ ff = makeFigureRowsCols(2020,[10 4 1.25 1.5],...
     'rightUpShifts',[0.25 0.2],...
     'widthHeightAdjustment',[-550 -280]);
 
-MY = 4.5; ysp = 0.925; mY = 0;
+MY = 5; ysp = 0.925; mY = 0;
 ystf = 0.9251; ysigf = 0.15;
 
 [hbs,xdata,mVar,semVar,combs,p,h] = ...
@@ -499,13 +499,13 @@ format_axes(gca);
 
 set(gca,'xcolor','k','ycolor','k',...
     'XTick',xdata,...
-    'XTickLabel',{'Air-On','Air-Off'});
+    'XTickLabel',{'Air-Off','Air-On'});
 
 xtickangle(30);
 ylabel({'Avg. Motion Energy (A.U.)'});
 
-x_on  = energy_on_all(:);
-x_off = energy_off_all(:);
+x_on  = energy_off_all(:);
+x_off = energy_on_all(:);
 
 hold on
 
@@ -534,7 +534,7 @@ for i = 1:length(x_on)
         'MarkerSize', 5);
 end
 
-ylim([0 5])
+% ylim([0 5])
 
 save_pdf(ff.hf,mData.pdf_folder,'bar_graphs_energy_animals.pdf',600);
 

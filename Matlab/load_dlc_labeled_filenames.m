@@ -66,7 +66,7 @@ end
             
             % 3. Construct the search pattern (BaseName + labeled)
             % Use * as a wildcard to allow for text before, between, or after the strings
-            pattern = fullfile(searchDir, ['*' base '*labeled*']);
+            pattern = fullfile(searchDir, ['*' base '*DLC_resnet*0.csv']);
             
             % 4. Find the files
             matchingFiles = dir(pattern);
@@ -83,7 +83,7 @@ end
             
             % 5. Access the names
             for i = 1:length(matchingFiles)
-                fprintf('Found file: %s\n', matchingFiles(i).name);
+                fprintf('Animal %s - Found file: %s\n', animal(an).ID,matchingFiles(i).name);
             end
 
 

@@ -7,7 +7,12 @@ function fig_dlc
 % v = evalin('base','v');
 mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_font_size = mD.axes_font_size;
 mData = mD;
-animal = evalin('base','animal');
+animal = evalin('base','oanimal');
+
+% physical_dist_cm = 5.0;  
+% pixel_dist_px = 200; % Measure this from a still frame using 'imdistline'
+px_to_cm = 0.0114; 
+
 n = 0;
 %%
 
@@ -91,7 +96,6 @@ format_axes(gca);
 % Save to your designated PDF folder
 save_pdf(ff.hf, mD.pdf_folder, 'DLC_Quality_Analysis_Colored.pdf', 600);
 
-%%
 %% ---------- Setup & Data Loading ----------
 file_path = fullfile(animal(1).pdir, 'video_20251216_165824DLC_resnet50_gcamp16declimbDec18shuffle1_185000_filtered.csv');
 opts = detectImportOptions(file_path);
@@ -103,6 +107,7 @@ tbl = readtable(file_path, opts);
 % x: Col 2, 5, 8, 11, 14, 17 | y: Col 3, 6, 9, 12, 15, 18
 x_idx = [2, 5, 8, 11, 14, 17];
 y_idx = [3, 6, 9, 12, 15, 18];
+likelihood_idx = [4, 7, 10, 13, 16, 19];
 bodyparts = {'Front Right', 'Front Left', 'Hind Right', 'Hind Left', 'Tail Base', 'Nose'};
 
 
@@ -127,6 +132,7 @@ tmin = time_sec / 60; % Convert to minutes for plotting
 N_target = length(time_sec);
 X_coords = table2array(tbl(1:N_target, x_idx));
 Y_coords = table2array(tbl(1:N_target, y_idx));
+L = table2array(tbl(1:N_target, likelihood_idx));
 
 % Use the custom colors from the mouse markers
 custom_colors = [
@@ -137,6 +143,46 @@ custom_colors = [
     1.00, 0.60, 0.00;  % Tail Base (Orange)
     1.00, 0.00, 0.00   % Nose (Red)
 ];
+
+% ---------- Likelihood filtering ----------
+lik_thresh = 0.9;
+
+low_conf = L < lik_thresh;
+
+X_coords(low_conf) = NaN;
+Y_coords(low_conf) = NaN;
+
+% ---------- Interpolate missing values ----------
+X_coords = fillmissing(X_coords,'linear');
+Y_coords = fillmissing(Y_coords,'linear');
+
+% ---------- No Smoothing ----------
+X_coordsS = X_coords;
+Y_coordsS = Y_coords;
+
+
+% ---------- Smooth coordinates ----------
+X_coordsS = movmedian(X_coords,5);
+Y_coordsS = movmedian(Y_coords,5);
+
+% X_coordsS = movmean(X_coordsS,5);
+% Y_coordsS = movmean(Y_coordsS,5);
+
+% Convert coordinates to cm
+X_cm = X_coordsS * px_to_cm;
+Y_cm = Y_coordsS * px_to_cm;
+fs = 60;
+% Compute velocity
+Vx = [zeros(1,6); diff(X_cm) * fs];
+Vy = [zeros(1,6); diff(Y_cm) * fs];
+
+% remove impossible spikes
+max_speed = 100; % cm/s
+
+Vx(abs(Vx) > max_speed) = NaN;
+Vy(abs(Vy) > max_speed) = NaN;
+
+
 %%
 T = animal(1).b.led_sig.("paws");
 t_paws = T.time/60;
@@ -160,7 +206,7 @@ for i = 1:6
     miny(i) = min(X_coords(:,i)); maxy(i) = max(X_coords(:,i));
     plot(tmin, X_coords(:,i), 'Color', custom_colors(i,:), 'LineWidth', 0.25);
 end
-ylim([200 1400])
+% ylim([200 1400])
 ylims = ylim;
 plot(t_paws,air_paws*ylims(2),'k','LineWidth',0.25)
 ylabel('X Pixel Value');xlabel('Time (min)');
@@ -191,7 +237,7 @@ hold on;
 for i = 1:6
     plot(tmin, Y_coords(:,i), 'Color', custom_colors(i,:), 'LineWidth', 0.25);
 end
-ylim([10 1000])
+% ylim([10 1000])
 ylims = ylim;
 plot(t_paws,air_paws*ylims(2),'k','LineWidth',0.25)
 
@@ -221,6 +267,95 @@ format_axes(gca)
 
 % Save the trajectory plot
 save_pdf(ff.hf, mD.pdf_folder, 'DLC_Trajectories.pdf', 600);
+
+%% ---------- Plotting: Inst Vel vs Time ----------
+magfac = mD.magfac;
+tmin = time_sec / 60; % Time in minutes for the x-axis
+
+ff = makeFigureRowsCols(111, [3 5 6.9 1.5], 'RowsCols', [1 2], ...
+    'spaceRowsCols', [0.1 0.061], 'rightUpShifts', [0.051 0.2],'widthHeightAdjustment',[-60 -300]);
+MY = 1920; ysp = 0.15285; mY = -2.5; titletxt = ''; ylabeltxt = {'PDF'}; % for all cells (vals) MY = 80
+stp = 0.1*magfac; widths = [3.12 3.12 2.85 1]*magfac; gap = 0.25*magfac;
+% adjust_axes(ff,[mY MY],stp,widths,gap,{''});
+% axes_title_shifts_line = [0 0.55 0 0]; axes_title_shifts_text = [0.02 0.1 0 0]; xs_gaps = [1 2];
+
+% --- Subplot 1: X-Coordinates vs Time ---
+axes(ff.h_axes(1,1))
+hold on;
+for i = 1:6
+    miny(i) = min(Vx(:,i)); maxy(i) = max(Vx(:,i));
+    plot(tmin, Vx(:,i), 'Color', custom_colors(i,:), 'LineWidth', 0.25);
+end
+ylim([min(miny) max(maxy)])
+ylims = ylim;
+% plot(t_paws,air_paws*ylims(2),'k','LineWidth',0.25)
+ylabel('Vx (cm/s)');xlabel('Time (min)');
+% title('Horizontal Position (X) over Time');
+% legend(bodyparts, 'Location', 'eastoutside', 'FontSize', 7, 'Box', 'off');
+% box off; format_axes(gca);
+xlim([0 3]);
+onsets = find_rising_edge(air_paws,0.5,-1);
+offsets = find_falling_edge(air_paws,-0.5,1);
+ylims = ylim;
+[TLx TLy] = ds2nfu(tmin(onsets(1)),ylims(2)-0);
+% axes(ff.h_axes(1,1));ylims = ylim;
+[BLx BLy] = ds2nfu(tmin(onsets(1)),ylims(1));
+aH = (TLy - BLy);
+len = sum(find(tmin(onsets)<3,1,'last'));
+for ii = 1:len%gth(onsets)
+    [BRx BRy] = ds2nfu(tmin(offsets(ii)),ylims(1));
+    [BLx BLy] = ds2nfu(tmin(onsets(ii)),ylims(1));
+    aW = (BRx-BLx);
+    annotation('rectangle',[BLx BLy aW aH],'facealpha',0.2,'linestyle','none','facecolor','k');
+end
+box off
+format_axes(gca)
+
+% --- Subplot 2: Y-Coordinates vs Time ---
+axes(ff.h_axes(1,2))
+hold on;
+for i = 1:6
+    minyy(i) = min(Vy(:,i)); maxyy(i) = max(Vy(:,i));
+    plot(tmin, Vy(:,i), 'Color', custom_colors(i,:), 'LineWidth', 0.25);
+end
+ylim([min(minyy) max(maxyy)])
+ylims = ylim;
+% plot(t_paws,air_paws*ylims(2),'k','LineWidth',0.25)
+
+ylabel('Vy (cm/s)');
+xlabel('Time (min)');
+% title('Vertical Position (Y) over Time');
+% box off; format_axes(gca);
+xlim([0 3]);
+
+onsets = find_rising_edge(air_paws,0.5,-1);
+offsets = find_falling_edge(air_paws,-0.5,1);
+
+ylims = ylim;
+[TLx TLy] = ds2nfu(tmin(onsets(1)),ylims(2)-0);
+% axes(ff.h_axes(1,1));ylims = ylim;
+[BLx BLy] = ds2nfu(tmin(onsets(1)),ylims(1));
+aH = (TLy - BLy);
+len = sum(find(tmin(onsets)<3,1,'last'));
+for ii = 1:len%gth(onsets)
+    [BRx BRy] = ds2nfu(tmin(offsets(ii)),ylims(1));
+    [BLx BLy] = ds2nfu(tmin(onsets(ii)),ylims(1));
+    aW = (BRx-BLx);
+    annotation('rectangle',[BLx BLy aW aH],'facealpha',0.2,'linestyle','none','facecolor','k');
+end
+box off
+format_axes(gca);
+
+% axes(ff.h_axes(1,1))
+% ylim([min([miny minyy]) max([maxy maxyy])])
+% axes(ff.h_axes(1,2))
+% ylim([min([miny minyy]) max([maxy maxyy])])
+
+
+
+% Save the trajectory plot
+save_pdf(ff.hf, mD.pdf_folder, 'DLC_Trajectories.pdf', 600);
+
 
 
 %% ---------- 1. Calculate Speeds for All Body Parts ----------

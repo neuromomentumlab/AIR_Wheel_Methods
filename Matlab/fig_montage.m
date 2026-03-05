@@ -5,7 +5,7 @@ function fig_montage
 % v = evalin('base','v');
 mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_font_size = mD.axes_font_size;
 mData = mD;
-animal = evalin('base','oanimal');
+animal = evalin('base','manimal');
 n = 0;
 %% montage of videos
 magfac = mD.magfac;
@@ -133,11 +133,12 @@ axes_title_shifts_line = [0 0.55 0 0]; axes_title_shifts_text = [0.02 0.1 0 0]; 
 hold on;
 cams = {'paws','face','pupil'};
 voffset = [1 1.1 1.2];
+% voffset = [0 0 0];
 tcolors = mD.colors(1:3);
 for c = 1:numel(cams)
     cam = cams{c};
     % === 2) LED – paws camera (60 Hz) ===
-    T = animal(3).b.led_sig.(cam);
+    T = animal(1).b.led_sig.(cam);
     t_paws = T.time/60;
     air_paws = double(T.is_on);
     plot(t_paws, air_paws * voffset(c), 'color',tcolors{c}, 'LineWidth', 0.51);
@@ -158,6 +159,86 @@ box off;
 format_axes(gca)
 putLegendH(gca,legs,tcolors)
 save_pdf(ff.hf,mData.pdf_folder,'alignment.pdf',600);
+%%
+% ************************************
+% for review:
+% Figure raw data
+magfac = mD.magfac;
+ff = makeFigureRowsCols(107,[3 5 6.75 1.6],'RowsCols',[2 1],'spaceRowsCols',[0.2 -0.02],'rightUpShifts',[0.15 0.22],...
+    'widthHeightAdjustment',[0 -225]);
+MY = 2; ysp = 0.15285; mY = -2.5; titletxt = ''; ylabeltxt = {'PDF'}; % for all cells (vals) MY = 80
+stp = 0.3*magfac; widths = [6.4 1 2.85 1]*magfac; gap = 0.115*magfac;
+adjust_axes(ff,[mY MY],stp,widths,gap,{''});
+axes_title_shifts_line = [0 0.55 0 0]; axes_title_shifts_text = [0.02 0.1 0 0]; xs_gaps = [1 2];
+
+axes(ff.h_axes(1,1));
+hold on;
+cams = {'paws','face','pupil'};
+voffset = [1 1.1 1.2];
+% voffset = [0 0 0];
+tcolors = mD.colors(1:3);
+for c = 1:numel(cams)
+    cam = cams{c};
+    % === 2) LED – paws camera (60 Hz) ===
+    T = animal(1).b.led_sig.(cam);
+    t_paws = T.time/60;
+    air_paws = double(T.is_on);
+    plot(t_paws, air_paws * voffset(c), 'color',tcolors{c}, 'LineWidth', 0.51);
+    tmax(c) = max(t_paws);
+end
+% === Formatting ===
+% xlabel('Time (min)');
+ylabel('Air state');
+% title('LED-based air synchronization across DAQ and video streams');
+% 
+% yticks([0 1.2 2.4 3.6]);
+% yticklabels({'Paws','Face','Pupil'});
+xlim([0 max(tmax)])
+ylim([0 1.5])
+legs = {'Paws','Face','Pupil',[1 0.72 1.5 1]};
+% legend({'Paws','Face','Pupil'},'Location','northeast');
+box off;
+% set(gca,'XTickLabel',[])
+format_axes(gca)
+putLegendH(gca,legs,tcolors)
+
+axes(ff.h_axes(2,1));
+hold on;
+cams = {'paws','face','pupil'};
+voffset = [1 1.1 1.2];
+% voffset = [0 0 0];
+tcolors = mD.colors(1:3);
+for c = 1:numel(cams)
+    cam = cams{c};
+    % === 2) LED – paws camera (60 Hz) ===
+    T = animal(1).b.led_sig.(cam);
+    t_paws = T.time/60;
+    air_paws = double(T.is_on);
+    plot(t_paws, air_paws * voffset(c), 'color',tcolors{c}, 'LineWidth', 0.51);
+    tmax(c) = max(t_paws);
+end
+% === Formatting ===
+xlabel('Time (min)');
+ylabel('Air state');
+% title('LED-based air synchronization across DAQ and video streams');
+% 
+% yticks([0 1.2 2.4 3.6]);
+% yticklabels({'Paws','Face','Pupil'});
+xlim([0 1])
+ylim([0 1.5])
+% legs = {'Paws','Face','Pupil',[1 0.52 1.4 1]};
+% legend({'Paws','Face','Pupil'},'Location','northeast');
+box off;
+format_axes(gca)
+% putLegendH(gca,legs,tcolors)
+
+save_pdf(ff.hf,mData.pdf_folder,'alignment.pdf',600);
+
+
+%***************************************
+
+
+
 %% for evaluating errors in ON duration and OFF duration of air stimulus
 
 [dur_daq, t_on_daq, t_off_daq, dur_daq_off] = air_durations(animal(1).b.t,animal(1).b.air_bin );

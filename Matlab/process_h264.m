@@ -74,9 +74,12 @@ end
                 animal(an).video.led.(cam) = out_file_csv;
                 continue
             end
-
-            % Build ffmpeg command (copy stream, no re-encode)
-            cmd = sprintf('ffmpeg -y -r 60 -i "%s" -c:v copy "%s"', in_file, out_file); %
+            if strcmp(animal(1).ID,'NML_M_05')
+                cmd = sprintf('ffmpeg -y -r 45 -i "%s" -c:v copy "%s"', in_file, out_file); %
+            else
+                % Build ffmpeg command (copy stream, no re-encode)
+                cmd = sprintf('ffmpeg -y -r 60 -i "%s" -c:v copy "%s"', in_file, out_file); %
+            end
             % cmd = sprintf(['ffmpeg -y -loglevel error -r 60 -i "%s" -vf "fps=60" -c:v libx264 -crf 10 -preset slow -pix_fmt yuv420p "%s"' ],in_file, out_file);
             
             % the above mentioned is for mp4

@@ -62,7 +62,7 @@ hi = prctile(sig_s, 80);
 
 thr_on  = lo + onFrac  * (hi - lo);
 thr_off = lo + offFrac * (hi - lo);
-
+    
 % -------------------------------
 % Hysteresis binarization
 % -------------------------------

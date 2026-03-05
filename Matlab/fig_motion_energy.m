@@ -52,12 +52,12 @@ for j = 1:num_targets
             
             % 2. Calculations
             time_sec = (data.time_ms / 1000)/60;
-            speed = sqrt(data.avg_u.^2 + data.avg_v.^2);
+            speed = sqrt(data.avg_u.^2 + data.avg_v.^2) * 0.0114 * 60;
             motion_energy = data.motion_energy;
             
             % 3. Plot Speed (Left Axis)
             yyaxis left
-            plot(time_sec, speed * 0.0114 * 60, 'Color', [0, 0.447, 0.741], 'LineWidth', 0.251);
+            plot(time_sec, speed, 'Color', [0, 0.447, 0.741], 'LineWidth', 0.251);
             ylabel(sprintf('%s Avg. Speed (cm/s)','OF')) % upper(key)));
             ax = gca;
             axy = ax;
@@ -244,7 +244,7 @@ meanSpeed_ON  = nan(nTrials,1);
 meanSpeed_OFF = nan(nTrials,1);
 
 for k = 1:nTrials
-    % Air ON window
+    % Air ON windo
     idx_on = air_on_idx(k):air_off_idx(k);
     meanSpeed_ON(k) = mean(speed(idx_on), 'omitnan');
 
@@ -261,8 +261,8 @@ end
 
 
     
-tcolors = {'b','c'};
-    data_C = [meanSpeed_ON meanSpeed_OFF];
+tcolors = {'c','b'};
+    data_C = [meanSpeed_OFF meanSpeed_ON];
     [within,dvn,xlabels] = make_within_table({'St'},[2]);
     dataT = make_between_table({data_C},dvn);
     ra = RMA(dataT,within,{0.05,{'hsd'}});
@@ -273,16 +273,19 @@ print_for_manuscript(ra)
 mData = evalin('base','mData'); colors = mData.colors; sigColor = mData.sigColor; axes_font_size = mData.axes_font_size; dcolors = mData.dcolors;
 tcolors = repmat(mData.dcolors(1:3),1,2);
 
-tcolors = {'b','c'};
+tcolors = {'c','b'};
 % figure(300);clf; ha = gca;
 ff = makeFigureRowsCols(2020,[10 4 1.25 1.5],'RowsCols',[1 1],'spaceRowsCols',[0.07 0],'rightUpShifts',[0.25 0.2],'widthHeightAdjustment',[-550 -280]);
-MY = 0.35; ysp = 0.0925; mY = 0; ystf = 0.09251; ysigf = 0.015;titletxt = ''; ylabeltxt = {'PDF'}; % for all cells (vals) MY = 80
+% MY = 0.3; ysp = 0.0925; mY = 0; ystf = 0.09251; ysigf = 0.015;titletxt = ''; ylabeltxt = {'PDF'}; % for all cells (vals) MY = 80
+MY = 0.35; ysp = 0.02725; mY = 0;
+ystf = 0.027251; ysigf = 0.015;
+
 [hbs,xdata,mVar,semVar,combs,p,h] = view_results_rmanova(ff.h_axes(1,1),ra,{'St','hsd',0.05},[1 2],tcolors,[mY MY ysp ystf ysigf],mData);
 % make_bars_hollow(hbs(2))
 format_axes(gca);
 set(gca,'xcolor','k','ycolor','k','xlim',xlim,'ylim',ylim,...
-    'XTick',xdata,'XTickLabel',{'Air-On','Air-Off'});xtickangle(30);
-ylabel({'Avg. OF Avg. Speed'});
+    'XTick',xdata,'XTickLabel',{'Air-Off','Air-On'});xtickangle(30);
+ylabel({'Avg. OF Avg. Speed (cm/s)'});
 % set_bar_graph_sub_xtick_text(ff.hf,gca,hbs,2,{'Pooled'},{[0 0]});
 % ht = set_axes_top_text_no_line(ff.hf,gca,sprintf('C1 - AOn'),[0.051 0.0 0 0]); 
 save_pdf(ff.hf,mData.pdf_folder,sprintf('bar_graphs.pdf'),600);
@@ -315,7 +318,7 @@ end
 
     
 tcolors = {'b','c'};
-    data_C = [meanSpeed_ON meanSpeed_OFF];
+    data_C = [meanSpeed_OFF meanSpeed_ON];
     [within,dvn,xlabels] = make_within_table({'St'},[2]);
     dataT = make_between_table({data_C},dvn);
     ra = RMA(dataT,within,{0.05,{'hsd'}});
@@ -326,16 +329,16 @@ print_for_manuscript(ra)
 mData = evalin('base','mData'); colors = mData.colors; sigColor = mData.sigColor; axes_font_size = mData.axes_font_size; dcolors = mData.dcolors;
 tcolors = repmat(mData.dcolors(1:3),1,2);
 
-tcolors = {'r','m'};
+tcolors = {'m','r'};
 % figure(300);clf; ha = gca;
 ff = makeFigureRowsCols(2020,[10 4 1.25 1.5],'RowsCols',[1 1],'spaceRowsCols',[0.07 0],'rightUpShifts',[0.25 0.2],'widthHeightAdjustment',[-550 -280]);
-MY = 4.5; ysp = 0.925; mY = 0; ystf = 0.9251; ysigf = 0.15;titletxt = ''; ylabeltxt = {'PDF'}; % for all cells (vals) MY = 80
+MY = 7; ysp = 0.925; mY = 0; ystf = 0.9251; ysigf = 0.15;titletxt = ''; ylabeltxt = {'PDF'}; % for all cells (vals) MY = 80
 [hbs,xdata,mVar,semVar,combs,p,h] = view_results_rmanova(ff.h_axes(1,1),ra,{'St','hsd',0.05},[1 2],tcolors,[mY MY ysp ystf ysigf],mData);
 % make_bars_hollow(hbs(2))
 format_axes(gca);
 set(gca,'xcolor','k','ycolor','k','xlim',xlim,'ylim',ylim,...
-    'XTick',xdata,'XTickLabel',{'Air-On','Air-Off'});xtickangle(30);
-ylabel({'Avg. Energy'});
+    'XTick',xdata,'XTickLabel',{'Air-Off','Air-On'});xtickangle(30);
+ylabel({'Avg. Energy (A.U.)'});
 % set_bar_graph_sub_xtick_text(ff.hf,gca,hbs,2,{'Pooled'},{[0 0]});
 % ht = set_axes_top_text_no_line(ff.hf,gca,sprintf('C1 - AOn'),[0.051 0.0 0 0]); 
 save_pdf(ff.hf,mData.pdf_folder,sprintf('bar_graphs.pdf'),600);

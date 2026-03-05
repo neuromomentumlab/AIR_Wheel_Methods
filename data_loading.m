@@ -18,6 +18,24 @@ adata_dir = fullfile(main_dir,'AData'); mD.adata_dir = adata_dir;
 
 % animal_list = {'NML_GC_01','NML_GC_01'};
 % date_list = {'2025_12_15','2025_12_16'};
+animal_list = {'NML_M_08'};
+date_list = {'2026_03_04'};
+
+% animal_list = {'NML_04','NML_05','NML_06'};
+% date_list = {'2026_01_15','2026_01_15','2026_01_15'};
+
+manimal = get_exp_info(mD,animal_list,date_list);
+
+disp('Done');
+%%
+main_dir = 'E:\Data\UNLV\AIR_Wheel_Methods'; mD.main_dir = main_dir;
+
+rdata_dir = fullfile(main_dir,'RData'); mD.rdata_dir = rdata_dir;
+pdata_dir = fullfile(main_dir,'PData'); mD.pdata_dir = pdata_dir;
+adata_dir = fullfile(main_dir,'AData'); mD.adata_dir = adata_dir;
+
+% animal_list = {'NML_GC_01','NML_GC_01'};
+% date_list = {'2025_12_15','2025_12_16'};
 animal_list = {'NML_GC_01'};
 date_list = {'2025_12_16'};
 
@@ -60,8 +78,11 @@ if 1
     owr = 0;
     animal = process_h264(animal,owr);
     oanimal = process_h264(oanimal,owr);
+    manimal = process_h264(manimal,owr);
+
     animal = process_behavior_signals(animal);
     oanimal = process_behavior_signals(oanimal);
+    manimal = process_behavior_signals(manimal);
 end
 disp('Done');
 %%
@@ -73,6 +94,8 @@ for ii = 1:4
 end
 
 %%
+oanimal = load_dlc_labeled_filenames(oanimal);
+
 animal = load_dlc_labeled_filenames(animal);
 % vp_labeled = VideoReader(animal(1).video.mp4_labeled.paws);
 

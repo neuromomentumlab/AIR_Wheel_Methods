@@ -5,7 +5,7 @@ function fig_speed_analysis
 % v = evalin('base','v');
 mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_font_size = mD.axes_font_size;
 mData = mD;
-animal = evalin('base','oanimal');
+animal = evalin('base','animal');
 n = 0;
 
 %%
@@ -498,8 +498,8 @@ end
 [p, h, stats] = signrank(medSpeed_ON_animal, medSpeed_OFF_animal);
 %%
 tcolors = {'b','m'};
-    % data_C = [meanSpeed_ON_animal meanSpeed_OFF_animal];
-    data_C = [meanSpeed_OFF meanSpeed_ON ];
+    data_C = [meanSpeed_OFF_animal meanSpeed_ON_animal];
+    % data_C = [meanSpeed_OFFmeanSpeed_ON ];
     [within,dvn,xlabels] = make_within_table({'St'},[2]);
     dataT = make_between_table({data_C},dvn);
     ra = RMA(dataT,within,{0.05,{'hsd'}});
@@ -530,7 +530,7 @@ tcolors = {'m','b'};
 % figure(300);clf; ha = gca;
 ff = makeFigureRowsCols(2020,[10 4 1.25 1.5],'RowsCols',[1 1],'spaceRowsCols',[0.07 0],'rightUpShifts',[0.2 0.2],'widthHeightAdjustment',[-550 -280]);
 MY = 8; ysp = 1.5; mY = 0; ystf = 1; ysigf = 0.5;titletxt = ''; ylabeltxt = {'PDF'}; % for all cells (vals) MY = 80
-MY = 8; ysp = 0.75; mY = 0; ystf = 1; ysigf = 0.5;titletxt = ''; ylabeltxt = {'PDF'}; % for all cells (vals) MY = 80
+MY = 7; ysp = 0.75; mY = 0; ystf = 1; ysigf = 0.5;titletxt = ''; ylabeltxt = {'PDF'}; % for all cells (vals) MY = 80
 
 % [xdata,mVar,semVar,combs,p,h] = get_vals_RMA(mData,ra,{'St','hsd'},[1 2],'no');
 
@@ -543,15 +543,15 @@ MY = 8; ysp = 0.75; mY = 0; ystf = 1; ysigf = 0.5;titletxt = ''; ylabeltxt = {'P
 format_axes(gca);
 set(gca,'xcolor','k','ycolor','k','xlim',xlim,'ylim',ylim,...
     'XTick',xdata,'XTickLabel',{'Air-Off','Air-On'});xtickangle(30);
-ylabel({'Avg. Speed (cm/s)'});
+ylabel({'Avg. Speed'});
 set_axes_limits(gca,[xdata(1)-0.75 xdata(end)+0.75],[mY MY]); 
 
 % ================================
 % Add paired animal dots
 % ================================
 
-x_on  = meanSpeed_ON(:);
-x_off = meanSpeed_OFF(:);
+x_on  = meanSpeed_OFF_animal(:);
+x_off = meanSpeed_ON_animal(:);
 
 hold on
 
@@ -565,19 +565,19 @@ for i = 1:length(x_on)
     x2 = xdata(2) - jitter;
 
     % connecting line
-    % plot([x1 x2], [x_off(i) x_on(i)], '-', ...
-        % 'Color', [0.95 0.95 0.95], 'LineWidth', 0.5);
+    plot([x1 x2], [x_on(i) x_off(i)], '-', ...
+        'Color', [0.6 0.6 0.6], 'LineWidth', 0.75);
 
-    % % dots
-    % plot(x1, x_off(i), '.', ...
-    %     'MarkerFaceColor', 'w', ...
-    %     'MarkerEdgeColor', 'k', ...
-    %     'MarkerSize', 1);
-    % 
-    % plot(x2, x_on(i), '.', ...
-    %     'MarkerFaceColor', 'w', ...
-    %     'MarkerEdgeColor', 'k', ...
-    %     'MarkerSize', 1);
+    % dots
+    plot(x1, x_on(i), '.', ...
+        'MarkerFaceColor', 'w', ...
+        'MarkerEdgeColor', 'k', ...
+        'MarkerSize', 5);
+
+    plot(x2, x_off(i), '.', ...
+        'MarkerFaceColor', 'w', ...
+        'MarkerEdgeColor', 'k', ...
+        'MarkerSize', 5);
 end
 
 
