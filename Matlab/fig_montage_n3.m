@@ -7,7 +7,8 @@ mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_fo
 mData = mD;
 animals = evalin('base','animals');
 animal = animals(3:5);
-animal = animals(2);
+animal = animals(1); fs_cam = 45;   % camera frame rate (Hz)
+% animal = animals(2); fs_cam = 60;   % camera frame rate (Hz)
 n = 0;
 %%
 
@@ -119,7 +120,6 @@ box off; format_axes(gca);
 
 %%
 
-fs_cam = 60;   % camera frame rate (Hz)
 streams = ["paws","face","pupil"];
 num_animals = length(animal);
 
@@ -250,7 +250,138 @@ box off; format_axes(gca);
 
 max(abs(FrameErr.(s).on_frames))
 max(abs(FrameErr.(s).off_frames))
+%%
+%% ============================================================
+% Event-anchored timing divergence without video upsampling
+% Separate analysis for LED ON and LED OFF
+%% ============================================================
+close all
+magfac = mD.magfac;
+ff = makeFigureRowsCols(107,[3 5 6.8 1.5],'RowsCols',[2 3],'spaceRowsCols',[0.25 -0.02],'rightUpShifts',[0.15 0.2],...
+    'widthHeightAdjustment',[0 -285]);
+MY = 2; ysp = 0.15285; mY = -2.5; titletxt = ''; ylabeltxt = {'PDF'}; % for all cells (vals) MY = 80
+stp = 0.325*magfac; widths = [1.9 1.9 1.9 1]*magfac; gap = 0.3*magfac;
+adjust_axes(ff,[mY MY],stp,widths,gap,{''});
+axes_title_shifts_line = [0 0.55 0 0]; axes_title_shifts_text = [0.02 0.1 0 0]; xs_gaps = [1 2];
 
+window = 3;   % seconds
+cams = {'paws','face','pupil'};
+camsT = {'Paws','Face','Pupil'};
 
+% DAQ signals
+t_daq   = animal(1).b.t;
+air_daq = animal(1).b.air_bin;
 
+[~, t_on_daq, t_off_daq] = air_durations(t_daq, air_daq);
 
+for c = 1:length(cams)
+
+    cam = cams{c};
+
+    % Video signals
+    t_vid   = animal(1).b.led_sig.(cam).time;
+    led_vid = animal(1).b.led_sig.(cam).is_on;
+
+    [~, t_on_vid, t_off_vid] = air_durations(t_vid, led_vid);
+
+    % Effective fps from timestamps
+    fps_eff = 1 / median(diff(t_vid));
+
+    % ---------------------------
+    % Helper function idea inline:
+    % compute divergence around events
+    % ---------------------------
+
+    event_sets = {
+        'ON',  t_on_daq,  t_on_vid;
+        'OFF', t_off_daq, t_off_vid
+    };
+
+    % figure('Name',['Timing divergence: ' cam], 'Color','w');
+
+    for e = 1:2
+
+        label     = event_sets{e,1};
+        evt_daq   = event_sets{e,2};
+        evt_vid   = event_sets{e,3};
+
+        nEvents = min(length(evt_daq), length(evt_vid));
+
+        div_cells = cell(nEvents,1);
+        tau_cells = cell(nEvents,1);
+
+        for i = 1:nEvents
+
+            % Anchor event at zero
+            tau_daq = t_daq - evt_daq(i);
+            tau_vid = t_vid - evt_vid(i);
+
+            % Keep only ± window for video frames
+            idx_vid = abs(tau_vid) <= window;
+            tau_vid_local = tau_vid(idx_vid);
+
+            % For each video frame time, find nearest DAQ sample
+            idx_nearest = interp1(tau_daq, 1:length(tau_daq), tau_vid_local, 'nearest', 'extrap');
+            idx_nearest = max(1, min(length(tau_daq), round(idx_nearest)));
+
+            tau_daq_nearest = tau_daq(idx_nearest);
+
+            % Divergence = video-relative time - DAQ-relative time
+            div_local = tau_vid_local - tau_daq_nearest;
+
+            tau_cells{i} = tau_vid_local(:);
+            div_cells{i} = div_local(:);
+        end
+
+        % Build common time grid on video scale
+        dt = median(diff(t_vid));
+        tau_grid = (-window:dt:window)';
+
+        div_mat = nan(length(tau_grid), nEvents);
+
+        for i = 1:nEvents
+            div_mat(:,i) = interp1(tau_cells{i}, div_cells{i}, tau_grid, 'linear', nan);
+        end
+
+        mean_div = mean(div_mat, 2, 'omitnan');
+        std_div  = std(div_mat, 0, 2, 'omitnan');
+
+        frame_err = mean_div * fps_eff;
+
+        % Plot in ms
+        % subplot(2,1,e)
+        axes(ff.h_axes(e,c));
+        if e == 1
+            setcolor = 'r';
+        else
+            setcolor = 'b';
+        end
+        plot(tau_grid, mean_div* fps_eff, setcolor, 'LineWidth', 0.5); hold on
+        plot(tau_grid, (mean_div+std_div)* fps_eff, '-', 'Color', [0.5 0.5 0.5],'LineWidth',0.25);
+        plot(tau_grid, (mean_div-std_div)* fps_eff, '-', 'Color', [0.5 0.5 0.5],'LineWidth',0.25);
+        yline(0, ':');
+        xline(0, ':r');
+        if e == 2
+            xlabel(['Time from Event (s)']);
+        end
+        % ylim([-0.01 0.01])
+        if c == 1
+            ylabel('Frame error (#)');
+        else
+            % set(gca,'YTickLabel',[])
+        end
+        if e == 1
+            title([camsT{c} ' Video']);
+        end
+        grid on
+        format_axes(gca)
+
+        % Print summary
+        fprintf('\nCamera: %s | Event: %s\n', cam, label);
+        fprintf('Max abs timing error within ±%d s: %.3f ms\n', ...
+            window, max(abs(mean_div))*1000);
+        fprintf('Max abs frame error within ±%d s: %.3f frames\n', ...
+            window, max(abs(frame_err)));
+    end
+end
+save_pdf(ff.hf,mData.pdf_folder,'alignment_error.pdf',600);

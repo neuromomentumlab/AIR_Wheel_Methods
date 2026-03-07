@@ -6,7 +6,7 @@ function fig_montage
 mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_font_size = mD.axes_font_size;
 mData = mD;
 animals = evalin('base','animals');
-animal = animals(2);
+animal = animals(1);
 n = 0;
 %% montage of videos
 magfac = mD.magfac;
@@ -175,9 +175,10 @@ axes_title_shifts_line = [0 0.55 0 0]; axes_title_shifts_text = [0.02 0.1 0 0]; 
 axes(ff.h_axes(1,1));
 hold on;
 cams = {'paws','face','pupil'};
-voffset = [1 1.1 1.2];
+voffset = [0.5 0.75 1 1.25];
 % voffset = [0 0 0];
-tcolors = mD.colors(1:3);
+tcolors = mD.colors(1:4);
+tcolors = {'c','b','r','m'};
 for c = 1:numel(cams)
     cam = cams{c};
     % === 2) LED – paws camera (60 Hz) ===
@@ -187,6 +188,8 @@ for c = 1:numel(cams)
     plot(t_paws, air_paws * voffset(c), 'color',tcolors{c}, 'LineWidth', 0.51);
     tmax(c) = max(t_paws);
 end
+plot(animal(1).b.tm, animal(1).b.air_bin * voffset(end), 'color',tcolors{end}, 'LineWidth', 0.51);
+% plot(,*1.3,'color','k')
 % === Formatting ===
 % xlabel('Time (min)');
 ylabel('Air state');
@@ -196,7 +199,7 @@ ylabel('Air state');
 % yticklabels({'Paws','Face','Pupil'});
 xlim([0 max(tmax)])
 ylim([0 1.5])
-legs = {'Paws','Face','Pupil',[1 0.72 1.5 1]};
+legs = {'Paws','Face','Pupil','DAQ',[1 0.72 1.5 1]};
 % legend({'Paws','Face','Pupil'},'Location','northeast');
 box off;
 % set(gca,'XTickLabel',[])
@@ -206,9 +209,9 @@ putLegendH(gca,legs,tcolors)
 axes(ff.h_axes(2,1));
 hold on;
 cams = {'paws','face','pupil'};
-voffset = [1 1.1 1.2];
+% voffset = [1 1.1 1.2];
 % voffset = [0 0 0];
-tcolors = mD.colors(1:3);
+% tcolors = mD.colors(1:3);
 for c = 1:numel(cams)
     cam = cams{c};
     % === 2) LED – paws camera (60 Hz) ===
@@ -218,6 +221,8 @@ for c = 1:numel(cams)
     plot(t_paws, air_paws * voffset(c), 'color',tcolors{c}, 'LineWidth', 0.51);
     tmax(c) = max(t_paws);
 end
+plot(animal(1).b.tm, animal(1).b.air_bin * voffset(end), 'color',tcolors{end}, 'LineWidth', 0.51);
+
 % === Formatting ===
 xlabel('Time (min)');
 ylabel('Air state');

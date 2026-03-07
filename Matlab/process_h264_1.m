@@ -49,6 +49,12 @@ for an = 1:numel(animal)
         if exist(out_file,'file') && owr==0
             fprintf('Skipping existing: %s\n',mp4_name);
             animal(an).video.mp4.(cam) = mp4_name;
+            filen = [base '_video_specs.mat'];
+            spout_file = fullfile(animal(an).pdir, filen);
+            temp = load(spout_file);
+            animal(an).video.specs.(cam).fps = temp.fps_eff;
+            animal(an).video.specs.(cam).nframes = temp.nframes;
+            
             continue
         end
 

@@ -53,11 +53,12 @@ if 1
 %     make_db(T_C);
     owr = 0;
     animals = process_behavior_signals(animals);
-    animals = process_h264_1(animals,1);
+    animals = process_h264_1(animals);
 end
 disp('Done');
 %%
 animals = load_led_signal(animals,'LED_signal');
+[~,~,animals(1).b.led_sig.pupil.is_on] = find_onsets_offsets(animals(1).b.led_sig.pupil.is_on,2);
 disp('Done');
 %%
 animals = load_eye_pupil_roi(animals);
