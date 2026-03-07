@@ -8,48 +8,49 @@ n = 0;
 cams = {'face','pupil','paws'};
 %%
 for an = 1:numel(animal)
+    disp(animal(an).mat)
     b = load(animal(an).mat);
     
-    for c = 1:numel(cams)
-            cam = cams{c};
-
-            % If we don't have this camera, skip
-            if ~isfield(animal(an).video.h264, cam)
-                disp(sprintf('Skipping %s',cam));
-                continue;
-            end
-
-            h264_name = animal(an).video.h264.(cam);
-
-            if isempty(h264_name)
-                continue;
-            end
-
-            % Full input path
-            in_file = h264_name;
-            if ~exist(in_file,'file')
-                warning('process_h264:FileNotFound', ...
-                    'Could not find %s for animal %d', in_file, an);
-                continue;
-            end
-            if ~isfield(animal(an).video,"led")
-                continue;
-            end
-            thisfile = animal(an).video.led.(cam);
-            if ~exist(thisfile,'file')
-                disp(sprintf('Skipping %s',cam));
-                continue;
-            end
-            b.led.(cam) = readtable(thisfile);
-            if strcmp(animal(1).ID,'NML_M_08') || strcmp(animal(1).ID,'NML_GC_01_R')
-                disp(sprintf('%s',cam))
-                b.led_sig.(cam) = extract_led_from_roi_M(b.led.(cam), 45);
-            else
-                b.led_sig.(cam) = extract_led_from_roi(b.led.(cam), 60);
-            end
-
-    end
-
+    % for c = 1:numel(cams)
+    %         cam = cams{c};
+    % 
+    %         % If we don't have this camera, skip
+    %         if ~isfield(animal(an).video.h264, cam)
+    %             disp(sprintf('Skipping %s',cam));
+    %             continue;
+    %         end
+    % 
+    %         h264_name = animal(an).video.h264.(cam);
+    % 
+    %         if isempty(h264_name)
+    %             continue;
+    %         end
+    % 
+    %         % Full input path
+    %         in_file = h264_name;
+    %         if ~exist(in_file,'file')
+    %             warning('process_h264:FileNotFound', ...
+    %                 'Could not find %s for animal %d', in_file, an);
+    %             continue;
+    %         end
+    %         if ~isfield(animal(an).video,"led")
+    %             continue;
+    %         end
+    %         thisfile = animal(an).video.led.(cam);
+    %         if ~exist(thisfile,'file')
+    %             disp(sprintf('Skipping %s',cam));
+    %             continue;
+    %         end
+    %         b.led.(cam) = readtable(thisfile);
+    %         if strcmp(animal(1).ID,'NML_M_08') || strcmp(animal(1).ID,'NML_GC_01_R')
+    %             disp(sprintf('%s',cam))
+    %             b.led_sig.(cam) = extract_led_from_roi_M(b.led.(cam), 45);
+    %         else
+    %             b.led_sig.(cam) = extract_led_from_roi(b.led.(cam), 60);
+    %         end
+    % 
+    % end
+    % 
     
     % b = animal(an).b;
     clear o;

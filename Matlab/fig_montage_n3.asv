@@ -7,7 +7,7 @@ mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_fo
 mData = mD;
 animals = evalin('base','animals');
 animal = animals(3:5);
-animal = animals(2);
+animal = animals(1);
 n = 0;
 %%
 

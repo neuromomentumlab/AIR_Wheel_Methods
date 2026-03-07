@@ -381,7 +381,7 @@ for i = 1:numel(streams)
     % xlim([min(S.daq.on) max(S.daq.on)]);
     % ylim([min(S.(s).on) max(S.(s).on)]);
     lo = min([xlim ylim]); hi = max([xlim ylim]);
-    plot([lo hi],[lo hi],'k--'); % unity
+    % plot([lo hi],[lo hi],'k--'); % unity
     xlabel('DAQ ON duration (fr)'); ylabel(sprintf('%s ON duration (fr)', upper(s)));
     % title(sprintf('%s vs DAQ (ON)', upper(s)));
     box off;

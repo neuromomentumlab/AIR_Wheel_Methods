@@ -20,6 +20,7 @@ for an = 1:numel(animal)
     if isfield(animal(an),'b') && isfield(animal(an).b,'t')
         duration = animal(an).b.t(end);
     else
+        disp(animal(an).ID)
         error('DAQ time not available for animal %d',an);
     end
 
@@ -43,19 +44,11 @@ for an = 1:numel(animal)
         mp4_name = [base '.mp4'];
         out_file = fullfile(animal(an).pdir, mp4_name);
 
-        if strcmp(animal(an).ID,'NML_M_08') || strcmp(animal(1).ID,'NML_GC_01_R')
-            csv_name = [base '_LED_signal.csv'];
-        else
-            csv_name = [base '_intensity.csv'];
-        end
-
-        out_file_csv = fullfile(animal(an).pdir, csv_name);
 
         % Skip if already exists
         if exist(out_file,'file') && owr==0
             fprintf('Skipping existing: %s\n',mp4_name);
             animal(an).video.mp4.(cam) = mp4_name;
-            animal(an).video.led.(cam) = out_file_csv;
             continue
         end
 
@@ -113,10 +106,13 @@ for an = 1:numel(animal)
         %% -------------------------------------------------
 
         animal(an).video.mp4.(cam) = mp4_name;
-        animal(an).video.led.(cam) = out_file_csv;
-        animal(an).video.fps.(cam) = fps_eff;
-        animal(an).video.frames.(cam) = nframes;
-
+        % animal(an).video.fps.(cam) = fps_eff;
+        % animal(an).video.frames.(cam) = nframes;
+        animal(an).video.specs.(cam).fps = fps_eff;
+        animal(an).video.specs.(cam).nframes = nframes;
+        filen = [base '_video_specs.mat'];
+        spout_file = fullfile(animal(an).pdir, filen);
+        save(spout_file,"fps_eff","nframes");
     end
 end
 

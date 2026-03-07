@@ -110,7 +110,7 @@ end
 % -------------------------------
 % Remove glitches
 % -------------------------------
-minSamples = round(minDur_s * fps);
+minSamples = double(round(minDur_s * fps));
 
 is_on = bwareaopen(is_on,minSamples);
 is_on = ~bwareaopen(~is_on,minSamples);
