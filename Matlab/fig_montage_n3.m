@@ -8,7 +8,7 @@ mData = mD;
 animals = evalin('base','animals');
 animal = animals(3:5);
 animal = animals(1); fs_cam = 45;   % camera frame rate (Hz)
-% animal = animals(2); fs_cam = 60;   % camera frame rate (Hz)
+animal = animals(2); fs_cam = 60;   % camera frame rate (Hz)
 n = 0;
 %%
 
@@ -264,7 +264,7 @@ stp = 0.325*magfac; widths = [1.9 1.9 1.9 1]*magfac; gap = 0.3*magfac;
 adjust_axes(ff,[mY MY],stp,widths,gap,{''});
 axes_title_shifts_line = [0 0.55 0 0]; axes_title_shifts_text = [0.02 0.1 0 0]; xs_gaps = [1 2];
 
-window = 3;   % seconds
+window = 11;   % seconds
 cams = {'paws','face','pupil'};
 camsT = {'Paws','Face','Pupil'};
 

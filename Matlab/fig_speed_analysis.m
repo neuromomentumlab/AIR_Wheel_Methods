@@ -5,7 +5,8 @@ function fig_speed_analysis
 % v = evalin('base','v');
 mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_font_size = mD.axes_font_size;
 mData = mD;
-animal = evalin('base','manimal');
+animals = evalin('base','animals');
+animal = animals(2);
 n = 0;
 
 %%
