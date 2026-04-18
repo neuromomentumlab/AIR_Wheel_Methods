@@ -6,7 +6,8 @@ function fig_motion_energy()
 % v = evalin('base','v');
 mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_font_size = mD.axes_font_size;
 mData = mD;
-animal = evalin('base','animal');
+animal = evalin('base','oanimal');
+
 n = 0;
 
 %%

@@ -875,11 +875,11 @@ distD = [speed_animal_on',speed_animal_off'];
 
 tcolors = {'b','m'};
 [distDo,allVals,allValsG] = plotDistributions(distD);
-minBin = min(allVals);
-maxBin = max(allVals);
+minBin = -5.3946;%min(allVals);%-5.3946 obtained from panel 2F
+maxBin = 15.0082;%max(allVals);
 incr = 1;
-% [ha,hb,hca] = plotDistributions(allValsG,'colors',tcolors,'maxY',100,'min',minBin,'incr',incr,'max',maxBin,'do_mean','No');
-[ha,hb,hca] = plotDistributions(distDo,'colors',tcolors,'maxY',100,'min',minBin,'incr',incr,'max',maxBin,'do_mean','Yes');
+[ha,hb,hca] = plotDistributions(allValsG,'colors',tcolors,'maxY',100,'min',minBin,'incr',incr,'max',maxBin,'do_mean','No');
+% [ha,hb,hca] = plotDistributions(distDo,'colors',tcolors,'maxY',100,'min',minBin,'incr',incr,'max',maxBin,'do_mean','Yes');
 set(gca,'FontSize',6,'FontWeight','Bold','TickDir','out','xcolor','k','ycolor','k');
 %     changePosition(gca,[0.129 0.15 -0.09 -0.13]);
 ylim([0 100]); xlim([minBin maxBin]); %xlim([minBin 0.5]);

@@ -16,26 +16,13 @@ rdata_dir = fullfile(main_dir,'RData'); mD.rdata_dir = rdata_dir;
 pdata_dir = fullfile(main_dir,'PData'); mD.pdata_dir = pdata_dir;
 adata_dir = fullfile(main_dir,'AData'); mD.adata_dir = adata_dir;
 
-animal_list = {'NML_GC_01'};
-date_list = {'2025_12_16'};
-
-fanimal = get_exp_info(mD,animal_list,date_list);
-
-disp('Done');
-%%
-main_dir = 'E:\Data\UNLV\AIR_Wheel_Methods'; mD.main_dir = main_dir;
-
-rdata_dir = fullfile(main_dir,'RData'); mD.rdata_dir = rdata_dir;
-pdata_dir = fullfile(main_dir,'PData'); mD.pdata_dir = pdata_dir;
-adata_dir = fullfile(main_dir,'AData'); mD.adata_dir = adata_dir;
-
 animal_list = {'NML_M_08','NML_GC_01_R','NML_04_R','NML_05_R','NML_06_R'};
 date_list = {'2026_03_04','2025_12_16','2026_01_24','2026_01_14','2026_01_16'};
 
 animals = get_exp_info(mD,animal_list,date_list);
 
 
-animal_listT = {'NML_GC_01','NML_04_R','NML_05_R','NML_06_R'};
+animal_listT = {'NML_GC_01_R','NML_04_R','NML_05_R','NML_06_R'};
 date_listT = {'2025_12_15','2026_01_23','2026_01_13','2026_01_15'};
 animalsT = get_exp_info(mD,animal_listT,date_listT);
 
@@ -94,20 +81,8 @@ for ii = 1:3
 end
 
 %%
-oanimal = process_behavior_signals(oanimal);
-oanimal = process_h264(oanimal);
 oanimal = load_dlc_labeled_filenames(oanimal);
-oanimal = load_led_signal(oanimal,'intensity');
 
-%%
-fanimal = process_behavior_signals(fanimal);
-fanimal = process_h264(fanimal);
-fanimal = load_dlc_labeled_filenames(fanimal);
-fanimal = load_led_signal(fanimal,'intensity');
-%%
-clc
-animal = animals(2:5);
-animal = load_led_signal_s(animal,'LED_signal');
 animal = load_dlc_labeled_filenames(animal);
 % vp_labeled = VideoReader(animal(1).video.mp4_labeled.paws);
 

@@ -1,4 +1,4 @@
-function animal = load_led_signal(animal,suffix)
+function animal = load_led_signal_s(animal,suffix)
 
 if ~exist('animal','var')
     animal = evalin('base','animal');
@@ -8,7 +8,7 @@ if ~exist('owr','var')
     owr = 0;
 end
 
-cams = {'face','pupil','paws'};
+cams = {'paws'};
 
 for an = 1:numel(animal)
 
