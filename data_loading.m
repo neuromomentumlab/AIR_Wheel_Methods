@@ -30,7 +30,8 @@ pdata_dir = fullfile(main_dir,'PData'); mD.pdata_dir = pdata_dir;
 adata_dir = fullfile(main_dir,'AData'); mD.adata_dir = adata_dir;
 
 animal_list = {'NML_M_08','NML_GC_01_R','NML_04_R','NML_05_R','NML_06_R'};
-date_list = {'2026_03_04','2025_12_16','2026_01_24','2026_01_14','2026_01_16'};
+animal_list = {'NML_GC_01_R','NML_04_R','NML_05_R','NML_06_R'};
+date_list = {'2025_12_16','2026_01_24','2026_01_14','2026_01_16'};
 
 animals = get_exp_info(mD,animal_list,date_list);
 
@@ -77,8 +78,10 @@ end
 % animalsT = process_behavior_signals(animalsT);
 disp('Done');
 %%
+% animals = load_led_signal(animals,'intensity');
+clc
 animals = load_led_signal(animals,'LED_signal');
-[~,~,animals(1).b.led_sig.pupil.is_on] = find_onsets_offsets(animals(1).b.led_sig.pupil.is_on,2);
+% [~,~,animals(1).b.led_sig.pupil.is_on] = find_onsets_offsets(animals(1).b.led_sig.pupil.is_on,2);
 disp('Done');
 %%
 animals = load_eye_pupil_roi(animals);

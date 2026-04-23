@@ -36,8 +36,9 @@ for j = 1:num_targets
         [~, base_name, ~] = fileparts(full_mp4_path);
         
          T = animal(1).b.led_sig.(key);
-        t_paws = T.time_s/60;
-        air_paws = double(strcmp(T.is_on,'True'));
+        t_paws = T.time;
+        % air_paws = double(strcmp(T.is_on,'True'));
+        air_paws = T.is_on;
         
 
         % Define possible CSV paths (Reduced vs Original)
@@ -331,8 +332,8 @@ tcolors = repmat(mData.dcolors(1:3),1,2);
 
 tcolors = {'m','r'};
 % figure(300);clf; ha = gca;
-ff = makeFigureRowsCols(2020,[10 4 1.25 1.5],'RowsCols',[1 1],'spaceRowsCols',[0.07 0],'rightUpShifts',[0.25 0.2],'widthHeightAdjustment',[-550 -280]);
-MY = 7; ysp = 0.925; mY = 0; ystf = 0.9251; ysigf = 0.15;titletxt = ''; ylabeltxt = {'PDF'}; % for all cells (vals) MY = 80
+ff = makeFigureRowsCols(2020,[8 4 1.25 1.5],'RowsCols',[1 1],'spaceRowsCols',[0.07 0],'rightUpShifts',[0.25 0.2],'widthHeightAdjustment',[-550 -280]);
+MY = 5.5; ysp = 0.925; mY = 0; ystf = 0.9251; ysigf = 0.15;titletxt = ''; ylabeltxt = {'PDF'}; % for all cells (vals) MY = 80
 [hbs,xdata,mVar,semVar,combs,p,h] = view_results_rmanova(ff.h_axes(1,1),ra,{'St','hsd',0.05},[1 2],tcolors,[mY MY ysp ystf ysigf],mData);
 % make_bars_hollow(hbs(2))
 format_axes(gca);

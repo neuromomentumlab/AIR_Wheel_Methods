@@ -61,11 +61,11 @@ elseif ismember('mean_red',T.Properties.VariableNames)
     sig_raw = double(T.mean_red);
 
 else
-    % out.time        = T.time_s;
-    % % out.signal_raw  = sig_raw;
-    % % out.signal_s    = sig_s;
-    % out.is_on       = T.is_on;
-    out = T;
+    out.time        = T.frame/fps;
+    % out.signal_raw  = sig_raw;
+    % out.signal_s    = sig_s;
+    out.is_on       = strcmp(T.is_on,'True');
+    % out = T;
     return
     % error('No usable LED signal column found.');
 end

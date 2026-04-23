@@ -6,7 +6,7 @@ function fig_motion_energy()
 % v = evalin('base','v');
 mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_font_size = mD.axes_font_size;
 mData = mD;
-animal = evalin('base','animals');
+animal = evalin('base','oanimal');
 
 
 n = 0;
@@ -19,7 +19,7 @@ fs = 60;
 Npre  = round(win_pre  * fs);
 Npost = round(win_post * fs);
 
-targets = {'paws'};
+targets = {'pupil'};
 num_animals = length(animal);
 
 animal_means = [];   % will store per-animal averages
@@ -48,11 +48,7 @@ for a = 1:num_animals
         
         csv_path = fullfile(pdir, [base_name, '_reduced_OF.csv']);
         if ~exist(csv_path, 'file')
-            loc_R = strfind(csv_path,'_R');
-            csv_path(loc_R:(loc_R+1)) = [];
-            if ~exist(csv_path, 'file')
-                csv_path = fullfile(pdir, [base_name, '_OF.csv']);
-            end
+            csv_path = fullfile(pdir, [base_name, '_OF.csv']);
         end
         
         if ~exist(csv_path,'file')

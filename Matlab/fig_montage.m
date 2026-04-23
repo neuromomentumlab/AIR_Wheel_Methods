@@ -6,7 +6,7 @@ function fig_montage
 mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_font_size = mD.axes_font_size;
 mData = mD;
 animals = evalin('base','animals');
-animal = animals(1);
+animal = animals(2);
 n = 0;
 %% montage of videos
 magfac = mD.magfac;

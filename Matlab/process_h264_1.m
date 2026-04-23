@@ -54,7 +54,6 @@ for an = 1:numel(animal)
             temp = load(spout_file);
             animal(an).video.specs.(cam).fps = temp.fps_eff;
             animal(an).video.specs.(cam).nframes = temp.nframes;
-            
             continue
         end
 

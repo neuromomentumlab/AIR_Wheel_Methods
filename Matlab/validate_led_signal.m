@@ -1,0 +1,187 @@
+function [s_l_fix, out] = validate_led_signal(t_d, s_d, t_l, s_l, varargin)
+% VALIDATE_AND_REPAIR_LED_IF_NEEDED
+% Compare DAQ and LED event counts.
+% Only repairs LED signal if LED contains extra onset/offset events.
+%
+% Strategy:
+%   1. Check onset/offset counts
+%   2. If counts already match -> keep original LED signal
+%   3. If LED has extra events -> remove likely glitches by
+%      (a) removing very short ON runs
+%      (b) filling very short OFF gaps
+%   4. Re-check counts after each step
+%
+% INPUTS
+%   t_d, s_d : DAQ time and binary signal (ground truth)
+%   t_l, s_l : LED time and binary signal
+%
+% OPTIONAL NAME-VALUE PAIRS
+%   'MinOnFrac'  : minimum ON run as fraction of median DAQ ON duration (default 0.20)
+%   'MinOffFrac' : minimum OFF gap as fraction of median DAQ OFF duration (default 0.10)
+%   'Verbose'    : true/false (default true)
+
+p = inputParser;
+addRequired(p, 't_d');
+addRequired(p, 's_d');
+addRequired(p, 't_l');
+addRequired(p, 's_l');
+addParameter(p, 'MinOnFrac', 0.20, @(x) isnumeric(x) && isscalar(x) && x > 0);
+addParameter(p, 'MinOffFrac', 0.10, @(x) isnumeric(x) && isscalar(x) && x > 0);
+addParameter(p, 'Verbose', true, @(x) islogical(x) || isnumeric(x));
+parse(p, t_d, s_d, t_l, s_l, varargin{:});
+
+minOnFrac  = p.Results.MinOnFrac;
+minOffFrac = p.Results.MinOffFrac;
+verbose    = logical(p.Results.Verbose);
+
+t_d = double(t_d(:));
+s_d = logical(s_d(:));
+t_l = double(t_l(:));
+s_l = logical(s_l(:));
+
+% --- DAQ structure ---
+[daqInfo] = local_event_info(t_d, s_d);
+med_on_d  = median(daqInfo.dur_on, 'omitnan');
+med_off_d = median(daqInfo.dur_off, 'omitnan');
+
+% LED sampling interval
+dt_l = median(diff(t_l), 'omitnan');
+fps_l = 1 / dt_l;
+
+minOnSec  = max(0.25, minOnFrac  * med_on_d);
+minOffSec = max(0.10, minOffFrac * med_off_d);
+
+minOnSamples  = max(1, round(minOnSec  * fps_l));
+minOffSamples = max(1, round(minOffSec * fps_l));
+
+% --- Before ---
+before0 = local_event_info(t_l, s_l);
+current = before0;
+s_l_fix = s_l;
+
+repair_applied = false;
+repair_steps = {};
+
+% --------------------------------------------------
+% Rule 1: If counts already match, do nothing
+% --------------------------------------------------
+if before0.n_on == daqInfo.n_on && before0.n_off == daqInfo.n_off
+    after = before0;
+    if verbose
+        fprintf('Counts already match DAQ. No repair applied.\n');
+    end
+else
+    % --------------------------------------------------
+    % Only repair if LED has extra events
+    % --------------------------------------------------
+    if before0.n_on >= daqInfo.n_on || before0.n_off >= daqInfo.n_off
+
+        % Step A: remove short ON glitches
+        test_sig = bwareaopen(s_l_fix, minOnSamples);
+        infoA = local_event_info(t_l, test_sig);
+
+        if local_is_better(infoA, before0, daqInfo)
+            s_l_fix = test_sig;
+            current = infoA;
+            repair_applied = true;
+            repair_steps{end+1} = sprintf('Removed short ON runs (< %.3f s)', minOnSec);
+        end
+
+        % Stop early if counts now match
+        if ~(before0.n_on == daqInfo.n_on && before0.n_off == daqInfo.n_off)
+            % Step B: fill short OFF gaps (merge split pulses)
+            test_sig = ~bwareaopen(~s_l_fix, minOffSamples);
+            infoB = local_event_info(t_l, test_sig);
+
+            if local_is_better(infoB, before0, daqInfo)
+                s_l_fix = test_sig;
+                current = infoB;
+                repair_applied = true;
+                repair_steps{end+1} = sprintf('Filled short OFF gaps (< %.3f s)', minOffSec);
+            end
+        end
+
+        after = local_event_info(t_l, s_l_fix);
+
+    else
+        % LED has fewer events than DAQ -> do not try to repair
+        after = before0;
+        if verbose
+            fprintf('LED has fewer events than DAQ. No automatic repair applied.\n');
+        end
+    end
+end
+
+% --- Output ---
+out.before = before0;
+out.after = after;
+out.daq = daqInfo;
+out.repair_applied = repair_applied;
+out.repair_steps = repair_steps;
+out.minOnSec = minOnSec;
+out.minOffSec = minOffSec;
+out.minOnSamples = minOnSamples;
+out.minOffSamples = minOffSamples;
+
+if verbose
+    fprintf('======================================\n');
+    fprintf('validate_and_repair_led_if_needed\n');
+    fprintf('--------------------------------------\n');
+    fprintf('DAQ on/off     : %d / %d\n', daqInfo.n_on, daqInfo.n_off);
+    fprintf('Before on/off  : %d / %d\n', out.before.n_on, out.before.n_off);
+    fprintf('After on/off   : %d / %d\n', out.after.n_on, out.after.n_off);
+    fprintf('Repair applied : %d\n', repair_applied);
+    for i = 1:numel(repair_steps)
+        fprintf('  - %s\n', repair_steps{i});
+    end
+    fprintf('======================================\n');
+end
+
+end
+
+
+function info = local_event_info(t, s)
+on_idx  = find(diff([false; s]) == 1);
+off_idx = find(diff([s; false]) == -1);
+
+t_on  = t(on_idx);
+t_off = t(off_idx);
+
+n_on  = numel(t_on);
+n_off = numel(t_off);
+
+n_pair = min(n_on, n_off);
+t_on_p  = t_on(1:n_pair);
+t_off_p = t_off(1:n_pair);
+
+% keep only proper pairs
+good = t_off_p > t_on_p;
+t_on_p  = t_on_p(good);
+t_off_p = t_off_p(good);
+
+dur_on = t_off_p - t_on_p;
+
+dur_off = nan(max(numel(t_on_p)-1,0),1);
+if numel(t_on_p) > 1
+    dur_off = t_on_p(2:end) - t_off_p(1:end-1);
+end
+
+info.n_on = n_on;
+info.n_off = n_off;
+info.t_on = t_on;
+info.t_off = t_off;
+info.t_on_p = t_on_p;
+info.t_off_p = t_off_p;
+info.dur_on = dur_on;
+info.dur_off = dur_off;
+end
+
+
+function tf = local_is_better(candidate, current, daqInfo)
+% Candidate is better if its counts are closer to DAQ than current counts.
+
+curr_err = abs(current.n_on - daqInfo.n_on) + abs(current.n_off - daqInfo.n_off);
+cand_err = abs(candidate.n_on - daqInfo.n_on) + abs(candidate.n_off - daqInfo.n_off);
+
+tf = cand_err < curr_err;
+end
