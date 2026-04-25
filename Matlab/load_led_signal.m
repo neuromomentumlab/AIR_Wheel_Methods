@@ -45,63 +45,84 @@ for an = 1:numel(animal)
         tbl = readtable(out_file_csv);
         animal(an).b.led.(cam) = tbl;
         t_daq = animal(an).b.t; s_daq = animal(an).b.air_bin';
-        [s_daq,~] = clean_binary_event_pairs(t_daq,s_daq);
+        % [s_daq,~] = clean_binary_event_pairs(t_daq,s_daq);
         if strcmp(suffix,'LED_signal')
-            t_led = tbl.frame/fps; s_led = strcmp(tbl.LED_on,'True');
+            t_led = tbl.frame/fps; %s_led = strcmp(tbl.LED_on,'True');
+            s_led_raw = tbl.signal_raw;
+            s_led = apply_binary_segmentation(t_led,s_led_raw);
+            [s_led,~] = validate_led_signal(t_daq,s_daq,t_led,s_led);
+            if an == 4 && strcmp(cam,'paws')
+                csv_name_B = [base sprintf('_%s_B.csv',suffix)];
+                out_file_csv_B = fullfile(animal(an).pdir, csv_name_B);
+                tbl_B = readtable(out_file_csv_B);
+                s_led_raw_B = tbl_B.signal_raw;
+                s_led_B = apply_binary_segmentation(t_led,s_led_raw_B);
+                s_led_bin = binarize_led_with_background(t_led,s_led_raw,s_led_raw_B,'Plot',false);
+                [s_led,~] = validate_led_signal(t_daq,s_daq,t_led,s_led_bin);
+                [s_daq, ~] = remove_event_from_binary(t_daq, s_daq, 54);
+                n = 0;
+            end
         else
             t_led = tbl.frame/fps; s_led = strcmp(tbl.is_on,'True');
         end
-        % [s_led,~] = clean_binary_event_pairs(t_led,s_led);
-        if an > 1
-            [s_daq, out] = remove_event_from_binary(t_daq, s_daq, 1);
-            [s_led, out] = remove_event_from_binary(t_led, s_led, 1);
-            % [s_daq, out] = remove_event_from_binary(t_daq, s_daq, 1);
-            % [s_led, out] = remove_event_from_binary(t_led, s_led, 1);
+        if an == 4 && (strcmp(cam,'face') || strcmp(cam,'pupil'))
+            [s_led, ~] = remove_event_from_binary(t_led, s_led, 54);
+            [s_daq, ~] = remove_event_from_binary(t_daq, s_daq, 54);
+            n = 0;
         end
 
-        if an == 2 && strcmp(cam,'paws')
-            [s_led, out] = remove_event_from_binary(t_led, s_led, 6);
-            [s_led, out] = remove_event_from_binary(t_led, s_led, 6);
-            [s_led, out] = remove_event_from_binary(t_led, s_led, 18);
-        end
-
-        if an == 3 && strcmp(cam,'paws')
-            [s_led, out] = remove_event_from_binary(t_led, s_led, 7);
-            [s_led, out] = remove_event_from_binary(t_led, s_led, 41);
-            [s_led, out] = remove_event_from_binary(t_led, s_led, 41);
-            [s_daq, out] = remove_event_from_binary(t_daq, s_daq, 41);
-
-            [s_led, out] = remove_event_from_binary(t_led, s_led, 43);
-            [s_daq, out] = remove_event_from_binary(t_daq, s_daq, 43);
-            [s_daq, out] = remove_event_from_binary(t_daq, s_daq, 43);
-        end
-        
-        if an == 4 %&& strcmp(cam,'face')
-            [s_led, out] = remove_event_from_binary(t_led, s_led, 53);
-            [s_daq, out] = remove_event_from_binary(t_daq, s_daq, 53);
-        end
-
-        if an == 4 && strcmp(cam,'paws')
-            [s_led, out] = remove_event_from_binary(t_led, s_led, 5);
-            [s_led, out] = remove_event_from_binary(t_led, s_led, 19);
-            % [s_daq, out] = remove_event_from_binary(t_daq, s_daq, 53);
-        end
-
-        [slu,out] = validate_led_signal(t_daq,s_daq,t_led,s_led);
-        % animal(an).b.led_sig.(cam) = extract_led_from_roi_M(animal(an).b.led.(cam), fps);
-        % out = clean_led_by_trial_structure(animal(an).b, cam);
+        % figure(100); clf; plot_binary_with_event_numbers(t_daq, 0.5*s_daq, 100,'b',0.5); hold on; plot_binary_with_event_numbers(t_led, s_led, 100, 'r', 0.95); xlabel('Time (s)'); ylabel('State');
+        % figure(100); clf; plot_binary_with_event_numbers(t_daq, 0.5*s_daq, 100,'b',0.5); hold on; plot_binary_with_event_numbers(t_led, s_led_clean, 100, 'r', 0.95); xlabel('Time (s)'); ylabel('State');
         animal(an).b.led_sig.(cam).t_led = t_led;
         animal(an).b.led_sig.(cam).is_on = s_led;
-        % out = check_led_event_integrity(animal(an).b, cam);
-        % figure(100);clf;plot(animal(an).b.t,animal(an).b.air_bin); hold on; plot(animal(an).b.led_sig.(cam).time,animal(an).b.led_sig.(cam).is_on);
-        % figure(100);clf;plot(t_daq,0.5*s_daq,'LineWidth',2); hold on; plot(t_led,s_led);% plot(t_led,slu,'--');
-        figure(100); clf; plot_binary_with_event_numbers(t_daq, 0.5*s_daq, 100,'b',0.5); hold on; plot_binary_with_event_numbers(t_led, s_led, 100, 'r', 0.95); xlabel('Time (s)'); ylabel('State');
-        % figure(200); clf; plot_binary_with_event_numbers(t_daq, 0.5*s_daq, 200,'b',0.95);
         n = 0;
     end
 end
 end
 
+function [s_out, out] = merge_events_in_binary(t, s, eventNum1, eventNum2)
+% MERGE_EVENTS_IN_BINARY
+% Fills the gap between two events to combine them into one.
+%
+% INPUTS
+%   t         : time vector
+%   s         : binary/logical waveform
+%   eventNum1 : First event index (1-based)
+%   eventNum2 : Second event index (usually eventNum1 + 1)
+
+    t = double(t(:));
+    s = logical(s(:));
+
+    % 1. Find the onset/offset pairs using your existing pairing logic
+    on_idx_raw  = find(diff([false; s]) == 1);
+    off_idx_raw = find(diff([s; false]) == -1);
+    [on_idx_p, off_idx_p] = local_pair_events(on_idx_raw, off_idx_raw);
+
+    nEvents = numel(on_idx_p);
+    if eventNum1 > nEvents || eventNum2 > nEvents
+        error('Event numbers exceed total detected events (%d)', nEvents);
+    end
+
+    % 2. Identify the gap to fill
+    % We need to fill from the END of the earlier event 
+    % to the START of the later event.
+    idx_start_fill = min(off_idx_p(eventNum1), off_idx_p(eventNum2));
+    idx_end_fill   = max(on_idx_p(eventNum1), on_idx_p(eventNum2));
+
+    % 3. Create output signal and fill the gap
+    s_out = s;
+    s_out(idx_start_fill:idx_end_fill) = true;
+
+    % 4. Output info for verification
+    out.merged_indices = [eventNum1, eventNum2];
+    out.gap_time_range = [t(idx_start_fill), t(idx_end_fill)];
+    
+    % Recalculate final events for the 'after' struct
+    on_idx_new  = find(diff([false; s_out]) == 1);
+    off_idx_new = find(diff([s_out; false]) == -1);
+    [out.after.on_idx, out.after.off_idx] = local_pair_events(on_idx_new, off_idx_new);
+    out.after.nEvents = numel(out.after.on_idx);
+end
 
 function [s_out, out] = remove_event_from_binary(t, s, eventNum)
 % REMOVE_EVENT_FROM_BINARY

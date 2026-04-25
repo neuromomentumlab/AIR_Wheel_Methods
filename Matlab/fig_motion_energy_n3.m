@@ -7,11 +7,10 @@ function fig_motion_energy()
 mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_font_size = mD.axes_font_size;
 mData = mD;
 animal = evalin('base','animals');
-
-
+key = 'paws';
 n = 0;
 
-%%
+%% around onset
 win_pre  = 2;   % seconds
 win_post = 5;   % seconds
 fs = 60;
@@ -64,7 +63,7 @@ for a = 1:num_animals
         
         % optical flow speed
         speed = sqrt(data.avg_u.^2 + data.avg_v.^2);
-        speed = speed * 0.0114 * 60;   % your conversion
+        speed = speed * 0.0114 * entry.video.specs.(key).fps ;
     else
         continue
     end
@@ -120,13 +119,15 @@ plot(t_evt, grand_mean,'color',[0, 0.447, 0.741], 'LineWidth', 1);
 xlabel('Time from air onset (s)')
 ylabel('OF Avg. Speed (cm/s)')
 xlim([-2 5.5])
+ylim([0 0.8])
+ylim([-0.1 0.5])
 
 box off
 format_axes(gca)
 
 save_pdf(ff.hf,mD.pdf_folder,'OF_air_onset_grand_mean.pdf',600);
 
-%%
+%% around offset
 win_pre  = 2;   % seconds
 win_post = 6;   % seconds
 fs = 60;
@@ -134,7 +135,7 @@ fs = 60;
 Npre  = round(win_pre  * fs);
 Npost = round(win_post * fs);
 
-% targets = {'paws'};
+targets = {'paws'};
 num_animals = length(animal);
 
 animal_means = [];   % will store per-animal offset averages
@@ -174,7 +175,7 @@ for a = 1:num_animals
         data = readtable(csv_path);
         
         speed = sqrt(data.avg_u.^2 + data.avg_v.^2);
-        speed = speed * 0.0114 * 60;
+        speed = speed * 0.0114 * entry.video.specs.(key).fps ;
         
     else
         continue
@@ -234,19 +235,20 @@ plot(t_evt, grand_mean, 'color',[0, 0.447, 0.741], 'LineWidth', 1);
 xlabel('Time from air offset (s)')
 ylabel('OF Avg. Speed (cm/s)')
 xlim([-2 win_post+0.5])
+ylim([-0.1 0.5])
 
 box off
 format_axes(gca)
 
 save_pdf(ff.hf,mD.pdf_folder,'OF_air_offset_grand_mean.pdf',600);
 
-%%
+%% summary mean OF
 
 air_on_all  = [];
 air_off_all = [];
 
 num_animals = length(animal);
-key = 'pupil';
+% key = 'pupil';
 
 for a = 1:num_animals
     
@@ -282,7 +284,7 @@ for a = 1:num_animals
 
         data = readtable(csv_path);
         speed = sqrt(data.avg_u.^2 + data.avg_v.^2);
-        speed = speed * 0.0114 * 60;
+        speed = speed * 0.0114 * entry.video.specs.(key).fps;
 
     else
         continue
@@ -313,7 +315,7 @@ for a = 1:num_animals
     end
 
     % =============================
-    % CRITICAL: animal-level mean
+    % animal-level mean
     % =============================
     air_on_all(end+1,1)  = mean(meanSpeed_ON,'omitnan');
     air_off_all(end+1,1) = mean(meanSpeed_OFF,'omitnan');
@@ -355,7 +357,7 @@ set(gca,'xcolor','k','ycolor','k',...
     'XTickLabel',{'Air-Off','Air-On'});
 
 xtickangle(30);
-ylabel({'Avg. OF Speed (cm/s)'});
+ylabel({'Avg. OF Avg. Speed (cm/s)'});
 
 
 x_on  = air_off_all(:);
@@ -387,14 +389,14 @@ for i = 1:length(x_on)
         'MarkerEdgeColor', 'k', ...
         'MarkerSize', 5);
 end
-
+ylim([0 0.35])
 
 save_pdf(ff.hf,mData.pdf_folder,'bar_graphs_animals.pdf',600);
 
 
 
 
-%
+%%
 energy_on_all  = [];
 energy_off_all = [];
 
@@ -540,7 +542,7 @@ for i = 1:length(x_on)
         'MarkerSize', 5);
 end
 
-% ylim([0 5])
+ylim([0 5.5])
 
 save_pdf(ff.hf,mData.pdf_folder,'bar_graphs_energy_animals.pdf',600);
 

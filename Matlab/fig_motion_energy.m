@@ -6,7 +6,8 @@ function fig_motion_energy()
 % v = evalin('base','v');
 mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_font_size = mD.axes_font_size;
 mData = mD;
-animal = evalin('base','fanimal');
+animal = evalin('base','animal(1)');
+targets = {'paws'};
 n = 0;
 %% OF speed and motion energy with respect to air on and air off
 
@@ -16,7 +17,7 @@ session_date = entry.date;
 pdir = entry.pdir;
 
 % Targets to plot
-targets = {'paws'};
+
 num_targets = length(targets);
 
 magfac = mD.magfac;
@@ -53,7 +54,7 @@ for j = 1:num_targets
             
             % 2. Calculations
             time_sec = (data.time_ms / 1000)/60;
-            speed = sqrt(data.avg_u.^2 + data.avg_v.^2) * 0.0114 * 60;
+            speed = sqrt(data.avg_u.^2 + data.avg_v.^2) * 0.0114 * animal(1).video.specs.(key).fps;
             motion_energy = data.motion_energy;
             
             % 3. Plot Speed (Left Axis)
@@ -153,7 +154,7 @@ plot(t_evt, mean(trials,2) - std(trials,[],2), 'color',[0, 0.447, 0.741],'LineSt
 xlabel('Time from air onset (s)')
 ylabel('OF Avg. Speed (cm/s)')
 xlim([-2 5.5]);
-% ylim([-1 10])
+ylim([-0.1 0.5])
 box off;
 format_axes(gca);
 save_pdf(ff.hf,mD.pdf_folder,'bar_graph.pdf',600);  
@@ -228,7 +229,7 @@ plot(t_evt, mean(trials,2) - std(trials,[],2), 'color',[0, 0.447, 0.741],'LineSt
 xlabel('Time from air offset (s)')
 ylabel('OF Avg. Speed (cm/s)')
 xlim([-2 win_post+0.5]);
-% ylim([-1 10])
+ylim([-0.1 0.5])
 box off;
 format_axes(gca);
 save_pdf(ff.hf,mD.pdf_folder,'bar_graph.pdf',600);  
@@ -287,6 +288,7 @@ format_axes(gca);
 set(gca,'xcolor','k','ycolor','k','xlim',xlim,'ylim',ylim,...
     'XTick',xdata,'XTickLabel',{'Air-Off','Air-On'});xtickangle(30);
 ylabel({'Avg. OF Avg. Speed (cm/s)'});
+ylim([0 0.35]);
 % set_bar_graph_sub_xtick_text(ff.hf,gca,hbs,2,{'Pooled'},{[0 0]});
 % ht = set_axes_top_text_no_line(ff.hf,gca,sprintf('C1 - AOn'),[0.051 0.0 0 0]); 
 save_pdf(ff.hf,mData.pdf_folder,sprintf('bar_graphs.pdf'),600);
