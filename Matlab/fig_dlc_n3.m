@@ -7,7 +7,7 @@ function fig_dlc
 % v = evalin('base','v');
 mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_font_size = mD.axes_font_size;
 mData = mD;
-animal = evalin('base','animal');
+animal = evalin('base','animals');
 
 % physical_dist_cm = 5.0;  
 % pixel_dist_px = 200; % Measure this from a still frame using 'imdistline'
@@ -171,7 +171,7 @@ for i = 1:6
     set(hb,'FaceColor',custom_colors(i,:))
     % paired dots
     for k = 1:nValid
-        plot([1 2], [air_off_all(k,i) air_on_all(k,i)], '-', 'Color', [0 0 0 0.15]);
+        plot([1 2], [air_off_all(k,i) air_on_all(k,i)], '-', 'Color', [0 0 0 0.5]);
     end
 
     set(gca,'XTick',[1 2],'XTickLabel',{'Air-OFF','Air-ON'});xtickangle(30)
@@ -184,7 +184,7 @@ for i = 1:6
     box off
     format_axes(gca)
 end
-ht = sgtitle(sprintf('Paired Air-ON vs pre-Air-OFF (N=%d Mice - separate cohort)', nValid));set(ht,'FontSize',8,'FontWeight','Normal')
+ht = sgtitle(sprintf('Paired Air-ON vs pre-Air-OFF (All Animals, N=%d Mice)', nValid));set(ht,'FontSize',8,'FontWeight','Normal')
 
 save_pdf(gcf, mD.pdf_folder, 'DLC_bar_air_on_vs_off.pdf', 600);
 

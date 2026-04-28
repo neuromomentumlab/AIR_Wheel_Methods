@@ -291,6 +291,37 @@ ylabel({'Avg. OF Avg. Speed (cm/s)'});
 ylim([0 0.35]);
 % set_bar_graph_sub_xtick_text(ff.hf,gca,hbs,2,{'Pooled'},{[0 0]});
 % ht = set_axes_top_text_no_line(ff.hf,gca,sprintf('C1 - AOn'),[0.051 0.0 0 0]); 
+
+x_on = meanSpeed_ON;
+x_off = meanSpeed_OFF;
+hold on
+
+jitter = 0.05;  % small horizontal spread
+rng(1);         % reproducible
+
+for i = 1:length(x_on)
+
+    % jittered x positions
+    x1 = xdata(1) + jitter;
+    x2 = xdata(2) - jitter;
+
+    % connecting line
+    plot([x1 x2], [x_off(i) x_on(i)], '-', ...
+        'Color', [0.6 0.6 0.6], 'LineWidth', 0.75);
+
+    % % dots
+    % plot(x1, x_on(i), '.', ...
+    %     'MarkerFaceColor', 'w', ...
+    %     'MarkerEdgeColor', 'k', ...
+    %     'MarkerSize', 5);
+    % 
+    % plot(x2, x_off(i), '.', ...
+    %     'MarkerFaceColor', 'w', ...
+    %     'MarkerEdgeColor', 'k', ...
+    %     'MarkerSize', 5);
+end
+
+
 save_pdf(ff.hf,mData.pdf_folder,sprintf('bar_graphs.pdf'),600);
 %% rest vs motion FR average
 

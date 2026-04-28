@@ -36,9 +36,9 @@ date_list = {'2025_12_16','2026_01_24','2026_01_14','2026_01_16'};
 animals = get_exp_info(mD,animal_list,date_list);
 
 
-animal_listT = {'NML_GC_01','NML_04_R','NML_05_R','NML_06_R'};
-date_listT = {'2025_12_15','2026_01_23','2026_01_13','2026_01_15'};
-animalsT = get_exp_info(mD,animal_listT,date_listT);
+% animal_listT = {'NML_GC_01','NML_04_R','NML_05_R','NML_06_R'};
+% date_listT = {'2025_12_15','2026_01_23','2026_01_13','2026_01_15'};
+% animalsT = get_exp_info(mD,animal_listT,date_listT);
 
 disp('Done');
 %%
@@ -82,7 +82,12 @@ disp('Done');
 clc
 animals = load_led_signal(animals,'LED_signal');
 % [~,~,animals(1).b.led_sig.pupil.is_on] = find_onsets_offsets(animals(1).b.led_sig.pupil.is_on,2);
+animals = load_dlc_labeled_filenames(animals);
+
 disp('Done');
+%%
+animals = load_led_signal(animals,'LED_signal');
+
 %%
 animals = load_eye_pupil_roi(animals);
 disp('Done');
@@ -104,9 +109,9 @@ oanimal = load_led_signal(oanimal,'intensity');
 
 %%
 fanimal = process_behavior_signals(fanimal);
-fanimal = process_h264(fanimal);
+fanimal = process_h264_1(fanimal);
 fanimal = load_dlc_labeled_filenames(fanimal);
-fanimal = load_led_signal(fanimal,'intensity');
+fanimal = load_led_signal(fanimal,'LED_signal');
 %%
 clc
 animal = animals(2:5);

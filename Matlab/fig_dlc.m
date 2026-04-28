@@ -7,7 +7,7 @@ function fig_dlc
 % v = evalin('base','v');
 mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_font_size = mD.axes_font_size;
 mData = mD;
-animal = evalin('base','oanimal');
+animal = evalin('base','animals(1)');
 
 % physical_dist_cm = 5.0;  
 % pixel_dist_px = 200; % Measure this from a still frame using 'imdistline'

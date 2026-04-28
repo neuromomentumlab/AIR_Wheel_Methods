@@ -7,7 +7,7 @@ function fig_motion_energy()
 mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_font_size = mD.axes_font_size;
 mData = mD;
 animal = evalin('base','animals');
-key = 'paws';
+key = 'pupil';
 n = 0;
 
 %% around onset
@@ -18,7 +18,7 @@ fs = 60;
 Npre  = round(win_pre  * fs);
 Npost = round(win_post * fs);
 
-targets = {'paws'};
+targets = {'pupil'};
 num_animals = length(animal);
 
 animal_means = [];   % will store per-animal averages
@@ -119,8 +119,7 @@ plot(t_evt, grand_mean,'color',[0, 0.447, 0.741], 'LineWidth', 1);
 xlabel('Time from air onset (s)')
 ylabel('OF Avg. Speed (cm/s)')
 xlim([-2 5.5])
-ylim([0 0.8])
-ylim([-0.1 0.5])
+% ylim([-0.1 0.5])
 
 box off
 format_axes(gca)
@@ -135,7 +134,7 @@ fs = 60;
 Npre  = round(win_pre  * fs);
 Npost = round(win_post * fs);
 
-targets = {'paws'};
+% targets = {'paws'};
 num_animals = length(animal);
 
 animal_means = [];   % will store per-animal offset averages
@@ -235,7 +234,7 @@ plot(t_evt, grand_mean, 'color',[0, 0.447, 0.741], 'LineWidth', 1);
 xlabel('Time from air offset (s)')
 ylabel('OF Avg. Speed (cm/s)')
 xlim([-2 win_post+0.5])
-ylim([-0.1 0.5])
+% ylim([-0.1 0.5])
 
 box off
 format_axes(gca)
@@ -340,8 +339,13 @@ ff = makeFigureRowsCols(2021,[1 4 1.25 1.5],...
     'rightUpShifts',[0.25 0.2],...
     'widthHeightAdjustment',[-550 -280]);
 
-MY = 0.3; ysp = 0.05725; mY = 0;
-ystf = 0.057251; ysigf = 0.015;
+MY = 0.1; ysp = 0.01725; mY = 0;
+ystf = 0.0257251; ysigf = 0.0055;
+
+
+MY = 0.1; ysp = 0.04725; mY = 0;
+ystf = 0.07251; ysigf = 0.0055;
+
 
 tcolors = {'c','b'};
 
@@ -389,7 +393,8 @@ for i = 1:length(x_on)
         'MarkerEdgeColor', 'k', ...
         'MarkerSize', 5);
 end
-ylim([0 0.35])
+ylim([0 0.15]);
+ylim([0 0.35]);
 
 save_pdf(ff.hf,mData.pdf_folder,'bar_graphs_animals.pdf',600);
 
@@ -498,6 +503,9 @@ ff = makeFigureRowsCols(2020,[10 4 1.25 1.5],...
 MY = 5; ysp = 0.925; mY = 0;
 ystf = 0.9251; ysigf = 0.15;
 
+MY = 5; ysp = 0.915; mY = 0;
+ystf = 1.61; ysigf = 0.15;
+
 [hbs,xdata,mVar,semVar,combs,p,h] = ...
     view_results_rmanova(ff.h_axes(1,1),ra,...
     {'St','hsd',0.05},[1 2],tcolors,...
@@ -542,7 +550,8 @@ for i = 1:length(x_on)
         'MarkerSize', 5);
 end
 
-ylim([0 5.5])
+ylim([0 4])
+ylim([0 6.5])
 
 save_pdf(ff.hf,mData.pdf_folder,'bar_graphs_energy_animals.pdf',600);
 

@@ -67,9 +67,13 @@ end
             % 3. Construct the search pattern (BaseName + labeled)
             % Use * as a wildcard to allow for text before, between, or after the strings
             pattern = fullfile(searchDir, ['*' base '*DLC_resnet*0.csv']);
-            
+
             % 4. Find the files
             matchingFiles = dir(pattern);
+            if isempty(matchingFiles) && strcmp(cam,'paws')
+                pattern = fullfile(searchDir, ['*' base '*DLC_resnet*filtered.csv']);
+                matchingFiles = dir(pattern);
+            end
 
             if isempty(matchingFiles)
                 fprintf('Not Found file: for %s\n', cam);

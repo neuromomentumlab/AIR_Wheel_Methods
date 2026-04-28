@@ -8,14 +8,14 @@ mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_fo
 mData = mD;
 animals = evalin('base','animals');
 
-animal = animals(4);
-disp(animal.ID)
+% animal = animals(4);
+% disp(animal.ID)
 n = 0;
 
 %%
 aniii = 0;
-for anii = [3 4 5]
-    aniii = aniii + 1;
+for anii = 1:length(animals)
+    % aniii = aniii + 1;
     animal = animals(anii);
     disp(animal.ID)
 T = animal(1).b.led_sig.("pupil");
@@ -101,8 +101,8 @@ for k = 1:nTrials
 
     meanSpeed_OFF(k) = mean(pupil_area_sync(idx_off), 'omitnan');
 end
-all_meanSpeed_ON(aniii) = mean(meanSpeed_ON);
-all_meanSpeed_OFF(aniii) = mean(meanSpeed_OFF);
+all_meanSpeed_ON(anii) = mean(meanSpeed_ON);
+all_meanSpeed_OFF(anii) = mean(meanSpeed_OFF);
 end
 %%
     
@@ -121,7 +121,7 @@ tcolors = repmat(mData.dcolors(1:3),1,2);
 tcolors = {'k',[0.5 0.5 0.5]};
 % figure(300);clf; ha = gca;
 ff = makeFigureRowsCols(2020,[10 4 1.25 1.5],'RowsCols',[1 1],'spaceRowsCols',[0.07 0],'rightUpShifts',[0.27 0.2],'widthHeightAdjustment',[-550 -280]);
-MY = 0.0375; ysp = 0.925; mY = 0; ystf = 0.9251; ysigf = 0.15;titletxt = ''; ylabeltxt = {'PDF'}; % for all cells (vals) MY = 80
+MY = 0.0375; ysp = 0.007125; mY = 0; ystf = 0.0051; ysigf = 0.0015;titletxt = ''; ylabeltxt = {'PDF'}; % for all cells (vals) MY = 80
 [hbs,xdata,mVar,semVar,combs,p,h] = view_results_rmanova(ff.h_axes(1,1),ra,{'St','hsd',0.05},[1 2],tcolors,[mY MY ysp ystf ysigf],mData);
 % make_bars_hollow(hbs(2))
 format_axes(gca);
@@ -130,4 +130,36 @@ set(gca,'xcolor','k','ycolor','k','xlim',xlim,'ylim',ylim,...
 ylabel({'Avg. Eye-Pupil Area (cm^2)'});
 % set_bar_graph_sub_xtick_text(ff.hf,gca,hbs,2,{'Pooled'},{[0 0]});
 % ht = set_axes_top_text_no_line(ff.hf,gca,sprintf('C1 - AOn'),[0.051 0.0 0 0]); 
+
+x_on  = all_meanSpeed_OFF(:);
+x_off = all_meanSpeed_ON(:);
+
+hold on
+
+jitter = 0.05;  % small horizontal spread
+rng(1);         % reproducible
+
+for i = 1:length(x_on)
+
+    % jittered x positions
+    x1 = xdata(1) + jitter;
+    x2 = xdata(2) - jitter;
+
+    % connecting line
+    plot([x1 x2], [x_on(i) x_off(i)], '-', ...
+        'Color', [0.7 0.7 0.7], 'LineWidth', 0.75);
+
+    % dots
+    plot(x1, x_on(i), '.', ...
+        'MarkerFaceColor', 'w', ...
+        'MarkerEdgeColor', 'k', ...
+        'MarkerSize', 5);
+
+    plot(x2, x_off(i), '.', ...
+        'MarkerFaceColor', 'w', ...
+        'MarkerEdgeColor', 'k', ...
+        'MarkerSize', 5);
+end
+
+
 save_pdf(ff.hf,mData.pdf_folder,sprintf('bar_graphs.pdf'),600);

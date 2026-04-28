@@ -51,9 +51,12 @@ for an = 1:numel(animal)
             animal(an).video.mp4.(cam) = mp4_name;
             filen = [base '_video_specs.mat'];
             spout_file = fullfile(animal(an).pdir, filen);
+            try
             temp = load(spout_file);
             animal(an).video.specs.(cam).fps = temp.fps_eff;
             animal(an).video.specs.(cam).nframes = temp.nframes;
+            catch
+            end
             continue
         end
 
