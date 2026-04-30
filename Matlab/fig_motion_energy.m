@@ -7,7 +7,7 @@ function fig_motion_energy()
 mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_font_size = mD.axes_font_size;
 mData = mD;
 animal = evalin('base','animal(1)');
-targets = {'paws'};
+targets = {'pupil'};
 n = 0;
 %% OF speed and motion energy with respect to air on and air off
 
@@ -270,6 +270,7 @@ tcolors = {'c','b'};
     ra = RMA(dataT,within,{0.05,{'hsd'}});
 %     ra.ranova
 print_for_manuscript(ra)
+formatMeanSEM(ra.EM.St)
    magfac = mData.magfac;
 % visualization
 mData = evalin('base','mData'); colors = mData.colors; sigColor = mData.sigColor; axes_font_size = mData.axes_font_size; dcolors = mData.dcolors;
@@ -279,16 +280,16 @@ tcolors = {'c','b'};
 % figure(300);clf; ha = gca;
 ff = makeFigureRowsCols(2020,[10 4 1.25 1.5],'RowsCols',[1 1],'spaceRowsCols',[0.07 0],'rightUpShifts',[0.25 0.2],'widthHeightAdjustment',[-550 -280]);
 % MY = 0.3; ysp = 0.0925; mY = 0; ystf = 0.09251; ysigf = 0.015;titletxt = ''; ylabeltxt = {'PDF'}; % for all cells (vals) MY = 80
-MY = 0.35; ysp = 0.02725; mY = 0;
-ystf = 0.027251; ysigf = 0.015;
+MY = 0.35; ysp = 0.02725; mY = 0;ystf = 0.017251; ysigf = 0.00515;
+% MY = 0.15; ysp = 0.01725; mY = 0;ystf = 0.017251; ysigf = 0.00115;
 
-[hbs,xdata,mVar,semVar,combs,p,h] = view_results_rmanova(ff.h_axes(1,1),ra,{'St','hsd',0.05},[1 2],tcolors,[mY MY ysp ystf ysigf],mData);
+[hbs,xdata,mVar,semVar,combs,p,h] = view_results_rmanovaSD(ff.h_axes(1,1),ra,{'St','hsd',0.05},[1 2],tcolors,[mY MY ysp ystf ysigf],mData);
 % make_bars_hollow(hbs(2))
 format_axes(gca);
 set(gca,'xcolor','k','ycolor','k','xlim',xlim,'ylim',ylim,...
     'XTick',xdata,'XTickLabel',{'Air-Off','Air-On'});xtickangle(30);
 ylabel({'Avg. OF Avg. Speed (cm/s)'});
-ylim([0 0.35]);
+% ylim([0 0.15]);
 % set_bar_graph_sub_xtick_text(ff.hf,gca,hbs,2,{'Pooled'},{[0 0]});
 % ht = set_axes_top_text_no_line(ff.hf,gca,sprintf('C1 - AOn'),[0.051 0.0 0 0]); 
 
@@ -299,27 +300,27 @@ hold on
 jitter = 0.05;  % small horizontal spread
 rng(1);         % reproducible
 
-for i = 1:length(x_on)
-
-    % jittered x positions
-    x1 = xdata(1) + jitter;
-    x2 = xdata(2) - jitter;
-
-    % connecting line
-    plot([x1 x2], [x_off(i) x_on(i)], '-', ...
-        'Color', [0.6 0.6 0.6], 'LineWidth', 0.75);
-
-    % % dots
-    % plot(x1, x_on(i), '.', ...
-    %     'MarkerFaceColor', 'w', ...
-    %     'MarkerEdgeColor', 'k', ...
-    %     'MarkerSize', 5);
-    % 
-    % plot(x2, x_off(i), '.', ...
-    %     'MarkerFaceColor', 'w', ...
-    %     'MarkerEdgeColor', 'k', ...
-    %     'MarkerSize', 5);
-end
+% for i = 1:length(x_on)
+% 
+%     % jittered x positions
+%     x1 = xdata(1) + jitter;
+%     x2 = xdata(2) - jitter;
+% 
+%     % connecting line
+%     plot([x1 x2], [x_off(i) x_on(i)], '-', ...
+%         'Color', [0.6 0.6 0.6], 'LineWidth', 0.75);
+% 
+%     % % dots
+%     % plot(x1, x_on(i), '.', ...
+%     %     'MarkerFaceColor', 'w', ...
+%     %     'MarkerEdgeColor', 'k', ...
+%     %     'MarkerSize', 5);
+%     % 
+%     % plot(x2, x_off(i), '.', ...
+%     %     'MarkerFaceColor', 'w', ...
+%     %     'MarkerEdgeColor', 'k', ...
+%     %     'MarkerSize', 5);
+% end
 
 
 save_pdf(ff.hf,mData.pdf_folder,sprintf('bar_graphs.pdf'),600);
@@ -358,6 +359,9 @@ tcolors = {'b','c'};
     ra = RMA(dataT,within,{0.05,{'hsd'}});
 %     ra.ranova
 print_for_manuscript(ra)
+formatMeanSEM(ra.EM.St)
+
+
    magfac = mData.magfac;
 % visualization
 mData = evalin('base','mData'); colors = mData.colors; sigColor = mData.sigColor; axes_font_size = mData.axes_font_size; dcolors = mData.dcolors;
@@ -366,13 +370,13 @@ tcolors = repmat(mData.dcolors(1:3),1,2);
 tcolors = {'m','r'};
 % figure(300);clf; ha = gca;
 ff = makeFigureRowsCols(2020,[8 4 1.25 1.5],'RowsCols',[1 1],'spaceRowsCols',[0.07 0],'rightUpShifts',[0.25 0.2],'widthHeightAdjustment',[-550 -280]);
-MY = 5.5; ysp = 0.925; mY = 0; ystf = 0.9251; ysigf = 0.15;titletxt = ''; ylabeltxt = {'PDF'}; % for all cells (vals) MY = 80
-[hbs,xdata,mVar,semVar,combs,p,h] = view_results_rmanova(ff.h_axes(1,1),ra,{'St','hsd',0.05},[1 2],tcolors,[mY MY ysp ystf ysigf],mData);
+MY = 6.5; ysp = 0.825; mY = 0; ystf = 0.5251; ysigf = 0.15;titletxt = ''; ylabeltxt = {'PDF'}; % for all cells (vals) MY = 80
+[hbs,xdata,mVar,semVar,combs,p,h] = view_results_rmanovaSD(ff.h_axes(1,1),ra,{'St','hsd',0.05},[1 2],tcolors,[mY MY ysp ystf ysigf],mData);
 % make_bars_hollow(hbs(2))
 format_axes(gca);
 set(gca,'xcolor','k','ycolor','k','xlim',xlim,'ylim',ylim,...
     'XTick',xdata,'XTickLabel',{'Air-Off','Air-On'});xtickangle(30);
-ylabel({'Avg. Energy (A.U.)'});
+ylabel({'Avg. Motion Energy (A.U.)'});
 % set_bar_graph_sub_xtick_text(ff.hf,gca,hbs,2,{'Pooled'},{[0 0]});
 % ht = set_axes_top_text_no_line(ff.hf,gca,sprintf('C1 - AOn'),[0.051 0.0 0 0]); 
 save_pdf(ff.hf,mData.pdf_folder,sprintf('bar_graphs.pdf'),600);

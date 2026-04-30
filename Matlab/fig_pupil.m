@@ -7,7 +7,7 @@ function fig_pupil()
 mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_font_size = mD.axes_font_size;
 mData = mD;
 animals = evalin('base','animals');
-animal = animals(2);
+animal = animals(1);
 filen = fullfile(animal(1).pdir,'eye_pupil.mat');
 if exist(filen,'file')
     load(filen)
@@ -198,6 +198,7 @@ tcolors = {'b','c'};
     ra = RMA(dataT,within,{0.05,{'hsd'}});
 %     ra.ranova
 print_for_manuscript(ra)
+formatMeanSEM(ra.EM.St)
    magfac = mData.magfac;
 % visualization
 mData = evalin('base','mData'); colors = mData.colors; sigColor = mData.sigColor; axes_font_size = mData.axes_font_size; dcolors = mData.dcolors;
@@ -207,7 +208,7 @@ tcolors = {'k',[0.5 0.5 0.5]};
 % figure(300);clf; ha = gca;
 ff = makeFigureRowsCols(2020,[10 4 1.25 1.5],'RowsCols',[1 1],'spaceRowsCols',[0.07 0],'rightUpShifts',[0.27 0.2],'widthHeightAdjustment',[-550 -280]);
 MY = 0.0375; ysp = 0.925; mY = 0; ystf = 0.9251; ysigf = 0.15;titletxt = ''; ylabeltxt = {'PDF'}; % for all cells (vals) MY = 80
-[hbs,xdata,mVar,semVar,combs,p,h] = view_results_rmanova(ff.h_axes(1,1),ra,{'St','hsd',0.05},[1 2],tcolors,[mY MY ysp ystf ysigf],mData);
+[hbs,xdata,mVar,semVar,combs,p,h] = view_results_rmanovaSD(ff.h_axes(1,1),ra,{'St','hsd',0.05},[1 2],tcolors,[mY MY ysp ystf ysigf],mData);
 % make_bars_hollow(hbs(2))
 format_axes(gca);
 set(gca,'xcolor','k','ycolor','k','xlim',xlim,'ylim',ylim,...

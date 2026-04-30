@@ -41,12 +41,12 @@ for an = 1:numel(animal)
         disp(out_file_csv);
         animal(an).video.led.(cam) = out_file_csv;
 
-        fps = animal(an).video.specs.(cam).fps;
         tbl = readtable(out_file_csv);
         animal(an).b.led.(cam) = tbl;
         t_daq = animal(an).b.t; s_daq = animal(an).b.air_bin';
         % [s_daq,~] = clean_binary_event_pairs(t_daq,s_daq);
         if strcmp(suffix,'LED_signal')
+            fps = animal(an).video.specs.(cam).fps;
             t_led = tbl.frame/fps; %s_led = strcmp(tbl.LED_on,'True');
             s_led_raw = tbl.signal_raw;
             s_led = apply_binary_segmentation(t_led,s_led_raw);
@@ -63,7 +63,7 @@ for an = 1:numel(animal)
                 n = 0;
             end
         else
-            t_led = tbl.frame/fps; s_led = strcmp(tbl.is_on,'True');
+            t_led = tbl.frame/60; s_led = strcmp(tbl.is_on,'True');
         end
         if an == 4 && (strcmp(cam,'face') || strcmp(cam,'pupil'))
             [s_led, ~] = remove_event_from_binary(t_led, s_led, 54);

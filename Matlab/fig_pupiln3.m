@@ -113,6 +113,7 @@ tcolors = {'b','c'};
     ra = RMA(dataT,within,{0.05,{'hsd'}});
 %     ra.ranova
 print_for_manuscript(ra)
+formatMeanSEM(ra.EM.St)
    magfac = mData.magfac;
 % visualization
 mData = evalin('base','mData'); colors = mData.colors; sigColor = mData.sigColor; axes_font_size = mData.axes_font_size; dcolors = mData.dcolors;

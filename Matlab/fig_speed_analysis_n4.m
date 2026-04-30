@@ -164,6 +164,7 @@ tcolors = {'b','m'};
     ra = RMA(dataT,within,{0.05,{'hsd'}});
 %     ra.ranova
 print_for_manuscript(ra)
+formatMeanSEM(ra.EM.St)
     % data_C = [medSpeed_ON_animal medSpeed_OFF_animal];
     % [p,h] = signrank(medSpeed_ON_animal, medSpeed_OFF_animal);
     % x_on  = medSpeed_ON_animal(:);

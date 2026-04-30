@@ -6,7 +6,7 @@ function fig_speed_analysis
 mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_font_size = mD.axes_font_size;
 mData = mD;
 animals = evalin('base','animals');
-animal = animals(2);
+animal = animals(1);
 n = 0;
 
 %%
@@ -157,7 +157,7 @@ save_pdf(ff.hf,mD.pdf_folder,'raw_speed.pdf',600);
 led_paws = b.led_sig.paws;
 
 figure(100);clf;
-plot(led_paws.time, led_paws.is_on); hold on
+plot(led_paws.t_led, led_paws.is_on); hold on
 % stairs(led_paws.time, ...
 %        double(led_paws.is_on) * max(led_paws.signal_s), ...
 %        'LineWidth', 1.5)
@@ -506,6 +506,7 @@ tcolors = {'b','m'};
     ra = RMA(dataT,within,{0.05,{'hsd'}});
 %     ra.ranova
 print_for_manuscript(ra)
+formatMeanSEM(ra.EM.St)
     % data_C = [medSpeed_ON_animal medSpeed_OFF_animal];
     % [p,h] = signrank(medSpeed_ON_animal, medSpeed_OFF_animal);
     % x_on  = medSpeed_ON_animal(:);
@@ -539,7 +540,7 @@ MY = 8; ysp = 0.75; mY = 0; ystf = 1; ysigf = 0.5;titletxt = ''; ylabeltxt = {'P
 % 'ySpacing',ysp,'sigTestName','','sigLineWidth',0.25,'BaseValue',0.01,'capsize',1,...
 % 'xdata',xdata,'sigFontSize',7,'sigAsteriskFontSize',mData.asterisk_font_size,'barWidth',0.5,'sigLinesStartYFactor',ystf,'sigAsteriskyshift',ysigf);
 
- [hbs,xdata,mVar,semVar,combs,p,h] = view_results_rmanova(ff.h_axes(1,1),ra,{'St','hsd',0.05},[1 2],tcolors,[mY MY ysp ystf ysigf],mData);
+ [hbs,xdata,mVar,semVar,combs,p,h] = view_results_rmanovaSD(ff.h_axes(1,1),ra,{'St','hsd',0.05},[1 2],tcolors,[mY MY ysp ystf ysigf],mData);
 % make_bars_hollow(hbs(2))
 format_axes(gca);
 set(gca,'xcolor','k','ycolor','k','xlim',xlim,'ylim',ylim,...

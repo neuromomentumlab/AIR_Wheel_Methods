@@ -148,21 +148,26 @@ ff = makeFigureRowsCols(107,[3 5 6.75 1.5],'RowsCols',[1 6],'spaceRowsCols',[0.0
     'widthHeightAdjustment',[-45 -500]);
 p_t = NaN(1,6);
 nValid = size(air_off_all,1);
+clc
 for i = 1:6
     % subplot(1,6,i);
     axes(ff.h_axes(1,i));% nexttile
     hold on
     mOn  = mean(air_on_all(:,i),  'omitnan');
     mOff = mean(air_off_all(:,i), 'omitnan');
+    allmOn(i) = mOn;
+    allmOff(i) = mOff;
     seOn  = std(air_on_all(:,i),  'omitnan')/sqrt(nValid);
     seOff = std(air_off_all(:,i), 'omitnan')/sqrt(nValid);
-    
+    allseOn(i) = seOn;
+    allseOff(i) = seOff;
     data_all = [air_off_all(:,i) air_on_all(:,i)];
 
     [within,dvn,xlabels] = make_within_table({'State'},[2]);
     dataT = make_between_table({data_all},dvn);
     
     ra = RMA(dataT,within,{0.05,{'hsd'}});
+    i
     print_for_manuscript(ra)
     p_t(i) = ra.ps{1};
 
@@ -178,13 +183,13 @@ for i = 1:6
     if i == 1
         ylabel('Mean speed (cm/s)')
     end
-    ht = title(sprintf('%s | p=%.3g', bodyparts{i}, p_t(i)))
+    ht = title(sprintf('%s | p=%.3g', bodyparts{i}, p_t(i)));
     % ht = title(sprintf('%s | p<0.001', bodyparts{i}));
-    set(ht,'FontWeight','Normal')
+    set(ht,'FontWeight','Normal');
     box off
     format_axes(gca)
 end
-ht = sgtitle(sprintf('Paired Air-ON vs pre-Air-OFF (All Animals, N=%d Mice)', nValid));set(ht,'FontSize',8,'FontWeight','Normal')
+ht = sgtitle(sprintf('Paired Air-ON vs pre-Air-ON (All Animals, N=%d Mice)', nValid));set(ht,'FontSize',8,'FontWeight','Normal');
 
 save_pdf(gcf, mD.pdf_folder, 'DLC_bar_air_on_vs_off.pdf', 600);
 

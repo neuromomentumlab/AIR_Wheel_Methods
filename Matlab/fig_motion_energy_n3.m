@@ -329,6 +329,7 @@ dataT = make_between_table({data_C},dvn);
 
 ra = RMA(dataT,within,{0.05,{'hsd'}});
 print_for_manuscript(ra)
+formatMeanSEM(ra.EM.St)
 
 
 magfac = mData.magfac;
@@ -487,7 +488,7 @@ dataT = make_between_table({data_C},dvn);
 
 ra = RMA(dataT,within,{0.05,{'hsd'}});
 print_for_manuscript(ra)
-
+formatMeanSEM(ra.EM.St)
 
 magfac = mData.magfac;
 mData = evalin('base','mData');

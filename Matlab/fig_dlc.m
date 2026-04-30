@@ -8,6 +8,7 @@ function fig_dlc
 mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_font_size = mD.axes_font_size;
 mData = mD;
 animal = evalin('base','animals(1)');
+% animal = evalin('base','fanimal');
 
 % physical_dist_cm = 5.0;  
 % pixel_dist_px = 200; % Measure this from a still frame using 'imdistline'
@@ -112,9 +113,7 @@ bodyparts = {'Front Right', 'Front Left', 'Hind Right', 'Hind Left', 'Tail Base'
 
 
 % ---------- 1. Re-establish Time Base ----------
-% If time_sec is missing, we reconstruct it from the known sampling rate
-% Based on your previous data, your signals have 40745 samples.
-N_sig = 40748; 
+N_sig = 40746; 
 
 % If you have your sampling frequency (e.g., 30 fps or 60 fps)
 % If unknown, we can infer it if 'b.fs' exists from your earlier code
@@ -123,6 +122,7 @@ if exist('b','var') && isfield(b,'fs')
 else
     fs = 60; % Defaulting to 30 fps; change this to your actual video FPS
 end
+fs = animal(1).video.specs.paws.fps;
 
 % Create time vector in seconds
 time_sec = (0:N_sig-1)' / fs;
@@ -184,8 +184,8 @@ Vy(abs(Vy) > max_speed) = NaN;
 
 
 %%
-T = animal(1).b.led_sig.("paws");
-t_paws = T.time/60;
+T = animal(1).b.led_sig.paws;
+% t_paws = T.t_led/60;
 air_paws = double(T.is_on);
 %% ---------- Plotting: Trajectories vs Time ----------
 magfac = mD.magfac;
@@ -453,7 +453,8 @@ assert(numel(time_sec)==N, 'time_sec length must match X_coords rows.');
 
 % ---- 1) Resample/align air signal to DLC time base
 % LED time is in seconds already (but you divided by 60 earlier for t_paws)
-t_led  = double(T.time(:));                % seconds
+% t_led  = double(T.time(:));                % seconds
+t_led = double(T.t_led(:));
 air_led = double(strcmpi(string(T.is_on), "True") | double(T.is_on)); % robust
 
 % If T.is_on is already logical numeric, above still works.
@@ -591,7 +592,7 @@ end
 sgtitle('Onset-aligned DLC speed (mean ± SD)')
 
 % ---- 7) Plot 3: Trial-wise Air-ON vs Air-OFF (paired) bar + dots
-figure(503); clf
+% figure(503); clf
 % tiledlayout(1,6,'Padding','compact','TileSpacing','tight');
 %%
 magfac = mD.magfac;
@@ -605,8 +606,12 @@ for i = 1:6
     hold on
     mOn  = mean(mean_on(:,i),  'omitnan');
     mOff = mean(mean_off(:,i), 'omitnan');
-    seOn  = std(mean_on(:,i),  'omitnan')/sqrt(nValid);
-    seOff = std(mean_off(:,i), 'omitnan')/sqrt(nValid);
+    allmOn(i) = mOn;
+    allmOff(i) = mOff;
+    seOn  = std(mean_on(:,i),  'omitnan');%/sqrt(nValid);
+    seOff = std(mean_off(:,i), 'omitnan');%/sqrt(nValid);
+    allseOn(i) = seOn;
+    allseOff(i) = seOff;
 
     hb = bar([1 2], [mOff mOn]); % OFF then ON
     errorbar([1 2], [mOff mOn], [seOff seOn], 'k.', 'LineWidth', 1);
@@ -625,7 +630,7 @@ for i = 1:6
     box off
     format_axes(gca)
 end
-ht = sgtitle(sprintf('Paired per-trial Air-ON vs pre-Air-OFF (N=%d trials)', nValid));set(ht,'FontSize',8,'FontWeight','Normal')
+ht = sgtitle(sprintf('Paired Air-ON vs pre-Air-ON (Representative Animal, n = 34 trials)', nValid));set(ht,'FontSize',8,'FontWeight','Normal')
 
 save_pdf(gcf, mD.pdf_folder, 'DLC_bar_air_on_vs_off.pdf', 600);
 

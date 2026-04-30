@@ -5,8 +5,8 @@ function fig_speed_analysis
 % v = evalin('base','v');
 mD = evalin('base','mData'); colors = mD.colors; sigColor = mD.sigColor; axes_font_size = mD.axes_font_size;
 mData = mD;
-animals = evalin('base','animals');
-animal = animals(3:5)
+animal = evalin('base','animals');
+% animal = animals(3:5)
 n = 0;
 
 %%
@@ -157,7 +157,7 @@ save_pdf(ff.hf,mD.pdf_folder,'raw_speed.pdf',600);
 led_paws = b.led_sig.paws;
 
 figure(100);clf;
-plot(led_paws.time, led_paws.is_on); hold on
+plot(led_paws.t_led, led_paws.is_on); hold on
 % stairs(led_paws.time, ...
 %        double(led_paws.is_on) * max(led_paws.signal_s), ...
 %        'LineWidth', 1.5)

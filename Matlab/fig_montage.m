@@ -178,12 +178,12 @@ cams = {'paws','face','pupil'};
 voffset = [0.5 0.75 1 1.25];
 % voffset = [0 0 0];
 tcolors = mD.colors(1:4);
-tcolors = {'c','b','r','m'};
+tcolors = {'k','b','r','m'};
 for c = 1:numel(cams)
     cam = cams{c};
     % === 2) LED – paws camera (60 Hz) ===
     T = animal(1).b.led_sig.(cam);
-    t_paws = T.time/60;
+    t_paws = T.t_led/60;%T.time/60;
     air_paws = double(T.is_on);
     plot(t_paws, air_paws * voffset(c), 'color',tcolors{c}, 'LineWidth', 0.51);
     tmax(c) = max(t_paws);
@@ -216,7 +216,7 @@ for c = 1:numel(cams)
     cam = cams{c};
     % === 2) LED – paws camera (60 Hz) ===
     T = animal(1).b.led_sig.(cam);
-    t_paws = T.time/60;
+    t_paws = T.t_led/60;%time/60;
     air_paws = double(T.is_on);
     plot(t_paws, air_paws * voffset(c), 'color',tcolors{c}, 'LineWidth', 0.51);
     tmax(c) = max(t_paws);
