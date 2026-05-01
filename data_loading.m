@@ -95,12 +95,13 @@ disp('Done');
 animals = load_eye_pupil_signal(animals);
 disp('Done');
 %% Get Video Pointers
-for ii = 1:3
-    vpa{ii} = VideoReader(fullfile(animal_R(ii).pdir,animal_R(ii).video.mp4.paws));
-    vfa{ii} = VideoReader(fullfile(animal_R(ii).pdir,animal_R(ii).video.mp4.face));
-    va{ii} = VideoReader(fullfile(animal_R(ii).pdir,animal_R(ii).video.mp4.pupil));
+for ii = 1
+    vpa{ii} = VideoReader(fullfile(animals(ii).pdir,animals(ii).video.mp4.paws));
+    vfa{ii} = VideoReader(fullfile(animals(ii).pdir,animals(ii).video.mp4.face));
+    va{ii} = VideoReader(fullfile(animals(ii).pdir,animals(ii).video.mp4.pupil));
 end
-
+vpaL{1} = VideoReader(fullfile(animals(ii).pdir,'video_20251216_165824DLC_resnet50_gcamp16declimbDec18shuffle1_185000_filtered_labeled.mp4'));
+disp('Done');
 %%
 oanimal = process_behavior_signals(oanimal);
 oanimal = process_h264(oanimal);

@@ -1,0 +1,223 @@
+function make_alignment_movie_1(animal, vp, vf, va, trialNum, outFile)
+
+if nargin < 6
+    outFile = '';
+end
+
+preSec  = 7;
+postSec = 17;
+fpsOut  = 15;
+
+vids.paws  = vp;
+vids.face  = vf;
+vids.pupil = va;
+
+cams = {'paws','face','pupil'};
+
+%% --- DAQ air ON/OFF times for speed alignment ---
+air = animal.b.air_bin(:);
+tm  = animal.b.tm(:) * 60;   % minutes to seconds
+
+dair = diff([0; air]);
+
+daq_onsets  = find(dair == 1);
+daq_offsets = find(dair == -1);
+
+tOn_daq_all  = tm(daq_onsets);
+tOff_daq_all = tm(daq_offsets);
+
+t0_daq   = tOn_daq_all(trialNum);
+tOff_daq = tOff_daq_all(trialNum);
+
+tOn  = 0;
+tOff = tOff_daq - t0_daq;
+
+fprintf('DAQ trial %d: air ON %.3f s | air OFF %.3f s | duration %.3f s\n', ...
+    trialNum, t0_daq, tOff_daq, tOff);
+
+%% --- automatically find matching LED ON/OFF frames for each camera ---
+for c = 1:numel(cams)
+
+    cam = cams{c};
+
+    T = animal.b.led_sig.(cam);
+    led_bin = double(T.is_on(:));
+
+    dled = diff([0; led_bin]);
+
+    led_on_frames  = find(dled == 1);
+    led_off_frames = find(dled == -1);
+
+    led_on_times  = led_frame_times(T, led_on_frames, vids.(cam));
+    led_off_times = led_frame_times(T, led_off_frames, vids.(cam));
+
+    [dtOn, idxOn] = min(abs(led_on_times - t0_daq));
+    [dtOff, idxOff] = min(abs(led_off_times - tOff_daq));
+
+    fOn.(cam)  = led_on_frames(idxOn);
+    fOff.(cam) = led_off_frames(idxOff);
+
+    fprintf('%s: LED ON frame %d | dt %.4f s || LED OFF frame %d | dt %.4f s\n', ...
+        cam, fOn.(cam), dtOn, fOff.(cam), dtOff);
+
+end
+
+%% --- speed signal ---
+speed_t = animal.b.t(:);
+speed_y = animal.b.fSpeed(:);
+
+%% --- prepare figure ---
+hf = figure('Color','k','Position',[100 100 1400 800]);
+
+set(hf, ...
+    'DefaultAxesColor','k', ...
+    'DefaultAxesXColor','w', ...
+    'DefaultAxesYColor','w', ...
+    'DefaultTextColor','w', ...
+    'DefaultAxesFontSize',10, ...
+    'DefaultAxesLineWidth',1, ...
+    'InvertHardcopy','off');
+
+axPaws  = subplot(2,2,1);
+axFace  = subplot(2,2,2);
+axPupil = subplot(2,2,3);
+axSpeed = subplot(2,2,4);
+
+%% --- optional video writer ---
+saveMovie = ~isempty(outFile);
+
+if saveMovie
+    vw = VideoWriter(outFile,'MPEG-4');
+    vw.FrameRate = fpsOut;
+    open(vw);
+end
+
+%% --- movie loop ---
+tRelVec = -preSec : 1/fpsOut : postSec;
+
+for k = 1:numel(tRelVec)
+
+    tRel = tRelVec(k);
+
+    frameIdx.paws  = map_time_to_frame(tRel, fOn.paws,  fOff.paws,  tOn, tOff);
+    frameIdx.face  = map_time_to_frame(tRel, fOn.face,  fOff.face,  tOn, tOff);
+    frameIdx.pupil = map_time_to_frame(tRel, fOn.pupil, fOff.pupil, tOn, tOff);
+
+    framePaws  = read_frame_idx(vids.paws,  frameIdx.paws);
+    frameFace  = read_frame_idx(vids.face,  frameIdx.face);
+    framePupil = read_frame_idx(vids.pupil, frameIdx.pupil);
+
+    axes(axPaws); cla;
+    imshow(framePaws);
+    title(sprintf('Paws | t = %.2f s | frame %d', tRel, frameIdx.paws), 'Color','w');
+
+    axes(axFace); cla;
+    imshow(frameFace);
+    title(sprintf('Face | t = %.2f s | frame %d', tRel, frameIdx.face), 'Color','w');
+
+    axes(axPupil); cla;
+    imshow(framePupil);
+    title(sprintf('Pupil | t = %.2f s | frame %d', tRel, frameIdx.pupil), 'Color','w');
+
+    axes(axSpeed); cla; hold on;
+
+    plot(speed_t - t0_daq, speed_y, 'Color',[0 0.8 1], 'LineWidth',1.5);
+
+    xline(0,'--','Air ON','Color','w','LineWidth',1.2);
+    xline(tOff,'--','Air OFF','Color',[0.8 0.8 0.8],'LineWidth',1.2);
+    xline(tRel,'r','LineWidth',1.5);
+
+    xlim([-preSec postSec]);
+
+    idxWin = speed_t >= (t0_daq - preSec) & speed_t <= (t0_daq + postSec);
+
+    if any(idxWin)
+        yMin = min(speed_y(idxWin));
+        yMax = max(speed_y(idxWin));
+    else
+        yMin = min(speed_y);
+        yMax = max(speed_y);
+    end
+
+    if yMin == yMax
+        yMax = yMin + 1;
+    end
+    plot(speed_t - t0_daq, air * yMax, 'Color','r', 'LineWidth',1.5);
+
+    ylim([yMin yMax * 1.05]);
+
+    xlabel('Time from air onset (s)', 'Color','w');
+    ylabel('Speed (cm/s)', 'Color','w');
+    title(sprintf('Speed | trial %d', trialNum), 'Color','w');
+
+    set(gca,'Color','k','XColor','w','YColor','w','GridColor','g');
+
+    grid on;
+    box off;
+
+    drawnow;
+
+    if saveMovie
+        writeVideo(vw, getframe(hf));
+    end
+end
+
+if saveMovie
+    close(vw);
+    fprintf('Saved movie: %s\n', outFile);
+end
+close(hf);
+end
+
+
+function times = led_frame_times(T, frames, vObj)
+
+% if ismember('t_led', T.Properties.VariableNames)
+    times = T.t_led(frames);
+
+
+times = times(:);
+
+% If stored in frame units rather than seconds, convert to seconds
+if ~isempty(times) && max(times) > vObj.Duration * 1.5
+    times = times ./ vObj.FrameRate;
+end
+
+end
+
+
+function frameIdx = map_time_to_frame(tRel, fOn, fOff, tOn, tOff)
+
+effFps = (fOff - fOn) / (tOff - tOn);
+
+if tRel <= tOn
+    frameIdx = fOn + round((tRel - tOn) * effFps);
+elseif tRel <= tOff
+    frac = (tRel - tOn) / (tOff - tOn);
+    frameIdx = round(fOn + frac * (fOff - fOn));
+else
+    frameIdx = fOff + round((tRel - tOff) * effFps);
+end
+
+frameIdx = max(1, frameIdx);
+
+end
+
+
+function frame = read_frame_idx(vObj, frameIdx)
+
+frameIdx = max(1, round(frameIdx));
+
+tSec = (frameIdx - 1) / vObj.FrameRate;
+tSec = max(0, min(tSec, vObj.Duration));
+
+vObj.CurrentTime = double(tSec);
+
+if hasFrame(vObj)
+    frame = readFrame(vObj);
+else
+    vObj.CurrentTime = max(0, vObj.Duration - 1/vObj.FrameRate);
+    frame = readFrame(vObj);
+end
+
+end

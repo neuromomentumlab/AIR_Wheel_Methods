@@ -13,10 +13,8 @@ clc
 trial_num = 1;
 make_alignment_movie_1(animal(1), vp, vf, v, trial_num, sprintf('trial_%d_movie_1.mp4',trial_num));
 
-%%
-clc
-trial_num = 1;
-make_alignment_movie(animal(1), vp, vf, v, trial_num, fullfile(animal.adir,sprintf('trial_%d_movie_R.mp4',trial_num)));
+
+make_alignment_movie(animal(1), vp, vf, v, trial_num, sprintf('trial_%d_movie_1_90.mp4',trial_num));
 
 %% montage of videos
 magfac = mD.magfac;
